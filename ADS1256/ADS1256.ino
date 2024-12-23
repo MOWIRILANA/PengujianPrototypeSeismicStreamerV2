@@ -19,7 +19,7 @@
 
 #define cs 5 // chip select
 #define rdy 21 // data ready, input
-// #define rst 8 // may omit
+#define rst 4 // may omit
 
 #define SPISPEED 2500000   // Teensy 3.2 @120 mhz
 
@@ -32,10 +32,10 @@ void setup()
   pinMode(cs, OUTPUT);
   digitalWrite(cs, LOW); // tied low is also OK.
   pinMode(rdy, INPUT);
-  // pinMode(rst, OUTPUT);
-  // digitalWrite(rst, LOW);
-  // delay(1); // LOW at least 4 clock cycles of onboard clock. 100 microseconds is enough
-  // digitalWrite(rst, HIGH); // now reset to default values
+  pinMode(rst, OUTPUT);
+  digitalWrite(rst, LOW);
+  delay(1); // LOW at least 4 clock cycles of onboard clock. 100 microseconds is enough
+  digitalWrite(rst, HIGH); // now reset to default values
   
   delay(500);
   SPI.begin(); //start the spi-bus
@@ -149,7 +149,7 @@ A1h = 10100001 = 1,000SPS
 (1) for fCLKIN = 7.68MHz. Data rates scale linearly with fCLKIN. 
  ***********************************************************************************************/
   byte drate_reg = 0x03; //DRATE: A/D Data Rate (Address 03h)
-  byte drate_data = 0xF0; // F0h = 11110000 = 30,000SPS
+  byte drate_data = 0xD0; // F0h = 11110000 = 30,000SPS
   SPI.transfer(0x50 | drate_reg);
   SPI.transfer(0x00);   // 2nd command byte, write one register only
   SPI.transfer(drate_data);   // write the databyte to the register
