@@ -10,7 +10,7 @@ EthernetUDP Udp;
 
 const char* message = "Hello, this is ESP32 sending data!";
 IPAddress remoteIP(255, 255, 255, 255);  // Replace with the IP of the laptop or server
-const unsigned int remotePort = 12345; // Port to send data to
+const unsigned int remotePort = 55141; // Port to send data to
 
 void WizReset() {
     Serial.print("Resetting Wiz W5500 Ethernet Board...  ");
@@ -108,11 +108,17 @@ void setup() {
 void loop() {
     // Send a UDP packet
     Serial.println("Sending data via UDP...");
-    Udp.beginPacket(remoteIP, remotePort);  // Start the UDP packet to the remote IP and port
-    Udp.write(message);  // Write the message to the packet
-    Udp.endPacket();     // Send the packet
-    
-    Serial.println("Message sent!");
+    if (Udp.beginPacket(remoteIP, remotePort)) {
+    Udp.write(message);
+    if (Udp.endPacket()) {
+        Serial.println("UDP packet sent successfully!");
+    } else {
+        Serial.println("Error sending UDP packet.");
+    }
+  }   
+    else {
+        Serial.println("Failed to start UDP packet.");
+    }
 
     delay(1000);  // Delay for 1 second before sending the next message
 }
