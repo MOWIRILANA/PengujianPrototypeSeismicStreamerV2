@@ -2,7 +2,7 @@ import socket
 
 # Define the UDP listening IP address and port
 localIP = "0.0.0.0"  # Listen on all available network interfaces
-localPort = 12345     # Same port as the ESP32 is sending to
+localPort = 55141     # Same port as the ESP32 is sending to
 
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
