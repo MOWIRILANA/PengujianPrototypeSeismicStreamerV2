@@ -1,0 +1,14 @@
+ADS1256
+cs-5
+drdy-21
+reset-25
+sclk-18
+miso-19
+mosi-23
+
+W5500
+miso-19
+mosi-23
+sclk-18
+cs-15
+rst-26
