@@ -9,7 +9,9 @@
 /*
  * W5500 "hardware" MAC address.
  */
-uint8_t eth_MAC[] = { 0x02, 0xF0, 0x0D, 0xBE, 0xEF, 0x01 };
+// uint8_t eth_MAC[] = { 0x02, 0xF0, 0x0D, 0xBE, 0xEF, 0x01 };
+uint8_t eth_MAC[] = { 0xA0, 0x1D, 0x48, 0xF3, 0x86, 0xCF };
+
 
 
 /*
@@ -25,7 +27,7 @@ IPAddress eth_GW(192, 168, 43, 1);		// *** CHANGE THIS to match YOUR Gateway (ro
 
 #define RESET_P	26				// Tie the Wiz820io/W5500 reset pin to ESP32 GPIO26 pin.
 
-const uint16_t localPort = 55432;		// Local port for UDP packets.
+const uint16_t localPort = 55142;		// Local port for UDP packets.
 
 /*
  * Choose the NTP server pool for your geographical region for best
@@ -33,7 +35,7 @@ const uint16_t localPort = 55432;		// Local port for UDP packets.
  *
  * *** Uncomment only one of the following "timeServer[]" defines. ***
  */
-const char timeServer[] = "pool.ntp.org";		// Default NTP server pool.
+// const char timeServer[] = "pool.ntp.org";		// Default NTP server pool.
 // const char timeServer[] = "africa.pool.ntp.org";		// Regional server pool.
 // const char timeServer[] = "asia.pool.ntp.org";		// Regional server pool.
 // const char timeServer[] = "europe.pool.ntp.org";		// Regional server pool.

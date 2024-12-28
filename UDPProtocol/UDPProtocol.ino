@@ -3,16 +3,17 @@
 #include <EthernetUdp.h>
 #include "local_config.h"	
 
-const int NTP_PACKET_SIZE = 48;		// NTP time stamp is in the first 48 bytes of the message.
-byte packetBuffer[NTP_PACKET_SIZE];	// Buffer for both incoming and outgoing packets.
+const int UDP_PACKET_SIZE = 24;		// UDP time stamp is in the first 48 bytes of the message.
+char packetBuffer[UDP_PACKET_SIZE];	// Buffer for both incoming and outgoing packets.
+char ReplyBuffer[] = "acknowledged";
 
 EthernetUDP Udp;
 
 const char* message = "Hello, this is ESP32 sending data!";
-IPAddress remoteIP(255, 255, 255, 255);  // Replace with the IP of the laptop or server
-const unsigned int remotePort = 55141; // Port to send data to
+IPAddress remoteIP(255,255,255,255);  // Replace with the IP of the laptop or server
+// const unsigned int remotePort = 8888; // Port to send data to
 
-void WizReset() {
+void WizReset() { 
     Serial.print("Resetting Wiz W5500 Ethernet Board...  ");
     pinMode(RESET_P, OUTPUT);
     digitalWrite(RESET_P, HIGH);
@@ -59,24 +60,8 @@ void prt_ethval(uint8_t refval) {
     }
 }
 
-void setup() {
-    Serial.begin(115200);
-    delay(500);
-    Serial.println("\n\tUDP Client v1.0\r\n");
-
-    Ethernet.init(15);           // GPIO5 on the ESP32.
-    WizReset();
-
-    // Network configuration
-    Serial.println("Starting ETHERNET connection...");
-    Ethernet.begin(eth_MAC, eth_IP, eth_DNS, eth_GW, eth_MASK);
-
-    delay(200);
-
-    Serial.print("Ethernet IP is: ");
-    Serial.println(Ethernet.localIP());
-
-    // Check W5500 and cable connection
+void cableConnection(){
+      // Check W5500 and cable connection
     Serial.print("Checking connection.");
     bool rdy_flag = false;
     for (uint8_t i = 0; i <= 20; i++) {
@@ -96,19 +81,45 @@ void setup() {
         Serial.print("   Cable Status: ");
         prt_ethval(Ethernet.linkStatus());
         while (true) {
-            delay(10);          // Halt.
+            delay(10);
         }
     } else {
         Serial.println(" OK");
     }
+}
 
+void setup() {
+    Serial.begin(115200);
+    delay(500);
+    Serial.println("\n\tUDP Client v1.0\r\n");
+
+    Ethernet.init(15);
+    WizReset();
+
+    // Network configuration
+    Serial.println("Starting ETHERNET connection...");
+    Ethernet.begin(eth_MAC, eth_IP, eth_DNS, eth_GW, eth_MASK);
+
+    delay(200);
+    // Info Ethernet
+    Serial.print("Ethernet IP is: ");
+    Serial.println(Ethernet.localIP());
+    Serial.print("Subnet Mask : ");
+    Serial.println(Ethernet.subnetMask());
+    Serial.print("Gateway IP : ");
+    Serial.println(Ethernet.gatewayIP());
+    Serial.print("DNS Server : ");
+    Serial.println(Ethernet.dnsServerIP());
+
+    cableConnection();
     Udp.begin(localPort); // Start UDP communication
 }
 
 void loop() {
+    
     // Send a UDP packet
     Serial.println("Sending data via UDP...");
-    if (Udp.beginPacket(remoteIP, remotePort)) {
+    if (Udp.beginPacket(remoteIP, localPort)) {
     Udp.write(message);
     if (Udp.endPacket()) {
         Serial.println("UDP packet sent successfully!");

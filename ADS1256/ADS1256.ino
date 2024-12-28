@@ -1,4 +1,5 @@
 #include <SPI.h>
+#include <ADS1256_M.h>
 
 // Pin Definitions
 #define CS_PIN 5       // Chip Select
@@ -7,10 +8,6 @@
 
 // SPI Clock Speed
 #define SPI_SPEED 2000000 // 2 MHz
-
-void writeRegister(uint8_t reg, uint8_t value);
-uint32_t readData();
-void setChannel(uint8_t positive, uint8_t negative);
 
 // Initialize ADS1256
 void initADS1256() {
