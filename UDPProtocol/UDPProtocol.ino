@@ -10,7 +10,7 @@ char ReplyBuffer[] = "acknowledged";
 EthernetUDP Udp;
 
 const char* message = "Hello, this is ESP32 sending data!";
-IPAddress remoteIP(255,255,255,255);  // Replace with the IP of the laptop or server
+// IPAddress remoteIP(169,254,98,18);  // Replace with the IP of the laptop or server
 // const unsigned int remotePort = 8888; // Port to send data to
 
 void WizReset() { 
@@ -119,7 +119,7 @@ void loop() {
     
     // Send a UDP packet
     Serial.println("Sending data via UDP...");
-    if (Udp.beginPacket(remoteIP, localPort)) {
+    if (Udp.beginPacket(eth_IP, localPort)) {
     Udp.write(message);
     if (Udp.endPacket()) {
         Serial.println("UDP packet sent successfully!");

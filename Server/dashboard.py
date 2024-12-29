@@ -1,16 +1,19 @@
 import socket
 
-# Define the UDP listening IP address and port
-localIP = "0.0.0.0"  # Listen on all available network interfaces
-localPort = 55141     # Same port as the ESP32 is sending to
+# Konfigurasi server
+host = "0.0.0.0"  # Mendengarkan di semua antarmuka jaringan
+port = 58642      # Port server
 
-# Create a UDP socket
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((localIP, localPort))  # Bind the socket to the IP and port
+# Membuat socket
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_socket.bind((host, port))  # Bind ke alamat dan port
 
-print(f"Listening for UDP packets on port {localPort}...")
+print(f"Server listening on {host}:{port}...")
 
-# Receive UDP packets in a loop
+# Menunggu data
 while True:
-    data, addr = sock.recvfrom(1024)  # Buffer size is 1024 bytes
-    print(f"Received message: {data.decode()} from {addr}")
+    data, client_address = server_socket.recvfrom(1024)  # Menerima data
+    print(f"Received: {data.decode()} from {client_address}")
+
+    # Mengirim balasan
+    server_socket.sendto("Hello from server!".encode(), client_address)
