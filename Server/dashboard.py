@@ -1,19 +1,22 @@
 import socket
 
 # Konfigurasi server
-host = "0.0.0.0"  # Mendengarkan di semua antarmuka jaringan
-port = 58642      # Port server
+UDP_IP = "0.0.0.0"  # Mendengarkan di semua antarmuka
+UDP_PORT = 5000     # Port yang digunakan (sesuai dengan pengaturan ESP32)
 
-# Membuat socket
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server_socket.bind((host, port))  # Bind ke alamat dan port
+# Membuat socket UDP
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)  # Izinkan menerima broadcast
+sock.bind((UDP_IP, UDP_PORT))
 
-print(f"Server listening on {host}:{port}...")
+print(f"Server listening on {UDP_IP}:{UDP_PORT}")
 
-# Menunggu data
 while True:
-    data, client_address = server_socket.recvfrom(1024)  # Menerima data
-    print(f"Received: {data.decode()} from {client_address}")
-
-    # Mengirim balasan
-    server_socket.sendto("Hello from server!".encode(), client_address)
+    try:
+        data, addr = sock.recvfrom(1024)  # Buffer size 1024 bytes
+        print(f"Received message: {data.decode()} from {addr}")
+    except KeyboardInterrupt:
+        print("\nServer shutting down.")
+        break
+    except Exception as e:
+        print(f"Error: {e}")

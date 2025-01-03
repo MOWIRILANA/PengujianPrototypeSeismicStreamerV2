@@ -24,24 +24,16 @@ IPAddress eth_GW(192, 168, 43, 1);		// *** CHANGE THIS to match YOUR Gateway (ro
 
 
 #define RESET_P	26				// Tie the Wiz820io/W5500 reset pin to ESP32 GPIO26 pin.
+#define w5500_cs 15       //CS SPI PIN W5500
 
 const uint16_t localPort = 55432;		// Local port for UDP packets.
 
-/*
- * Choose the NTP server pool for your geographical region for best
- * performance (fewer lost packets).
- *
- * *** Uncomment only one of the following "timeServer[]" defines. ***
- */
-const char timeServer[] = "pool.ntp.org";		// Default NTP server pool.
-// const char timeServer[] = "africa.pool.ntp.org";		// Regional server pool.
-// const char timeServer[] = "asia.pool.ntp.org";		// Regional server pool.
-// const char timeServer[] = "europe.pool.ntp.org";		// Regional server pool.
-// const char timeServer[] = "north-america.pool.ntp.org";	// Regional server pool.
-// const char timeServer[] = "oceania.pool.ntp.org";		// Regional server pool.
-// const char timeServer[] = "south-america.pool.ntp.org";	// Regional server pool.
-// const char timeServer[] = "time.nist.gov";			// Original example target server (least preferred).
-
-const uint8_t SLEEP_SECS = 15;			// Number of seconds to sleep between queries to the time
-						// server. Please don't set this any lower than 10 unless
-						// timeServer[] is a local NTP server on -your- network.
+byte readRegister(byte addr) {
+  digitalWrite(w5500_cs, LOW);
+  SPI.transfer(0x0F); // Opcode Read
+  SPI.transfer(addr & 0x1F); // Address & Mask
+  SPI.transfer(0x00); // Dummy Byte
+  byte value = SPI.transfer(0x00); // Receive Data
+  digitalWrite(w5500_cs, HIGH);
+  return value;
+}

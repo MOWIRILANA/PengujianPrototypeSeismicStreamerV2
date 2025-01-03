@@ -3,10 +3,10 @@
 
 // W5500 settings
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; // MAC address
-IPAddress ip(255,255,255,255);                      // Static IP address ESP32
-IPAddress serverIP(192, 168, 43, 157);                // IP Laptop (server)
+IPAddress ip(0, 0, 0, 0);                      // Static IP address ESP32
+IPAddress serverIP(169, 254, 98, 18);                // IP Laptop (server)
 IPAddress gateway(192, 168, 43, 1);                   // Gateway
-IPAddress subnet(255, 255, 255, 0);                  // Subnet mask
+IPAddress subnet(255, 255, 0, 0);                  // Subnet mask
 
 EthernetClient client;
 
