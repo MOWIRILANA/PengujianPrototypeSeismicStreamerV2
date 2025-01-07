@@ -1,10 +1,10 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <EthernetUdp.h>
-#include "local_config.h"
+#include "IPLaptop.h"
 
 // Pin Definitions
-#define CS 5    // Chip Select
+#define CS 15    // Chip Select
 #define RDY 21  // Data Ready
 
 #define SPISPEED 2500000  // SPI speed for communication with ADS1256
@@ -32,7 +32,7 @@ void setup() {
 
   // Ethernet Initialization
   Serial.println("\n\tUDP Client v1.0\r\n");
-  Ethernet.init(3);
+  Ethernet.init(CS);
   WizReset();
 
   Serial.println("Starting ETHERNET connection...");

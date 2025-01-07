@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XIAO-ESP32-S3 Real-time Sensor Monitoring</title>
+    <!-- Tambahkan pustaka Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const devices = [
+            { ip: "192.168.100.101", elementId: "voltage1", chartId: "chart1", lastValue: null, chart: null },
+            { ip: "192.168.100.102", elementId: "voltage2", chartId: "chart2", lastValue: null, chart: null },
+            { ip: "192.168.100.103", elementId: "voltage3", chartId: "chart3", lastValue: null, chart: null },
+            { ip: "192.168.100.104", elementId: "voltage4", chartId: "chart4", lastValue: null, chart: null }
+            // Tambahkan IP dan elemen baru untuk perangkat tambahan
+        ];
+        const changeThreshold = 0.01; // threshold perubahan yang dianggap signifikan
+        const maxDataPoints = 50; // Jumlah titik data maksimum di grafik
+
+        function fetchData(device) {
+            fetch(`http://${device.ip}`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    }
+                })
+                .then(data => {
+                    if (data && Math.abs(device.lastValue - data.voltage) > changeThreshold) {
+                        // Perbarui nilai tampilan dan grafik
+                        document.getElementById(device.elementId).innerText = data.voltage.toFixed(6) + " mV";
+                        device.lastValue = data.voltage; // Simpan nilai terakhir untuk perbandingan selanjutnya
+                        
+                        // Tambahkan data ke grafik
+                        if (device.chart) {
+                            const time = new Date().toLocaleTimeString(); // Waktu saat ini
+                            device.chart.data.labels.push(time);
+                            device.chart.data.datasets[0].data.push(data.voltage);
+
+                            // Hapus data lama jika melebihi maxDataPoints
+                            if (device.chart.data.labels.length > maxDataPoints) {
+                                device.chart.data.labels.shift();
+                                device.chart.data.datasets[0].data.shift();
+                            }
+                            device.chart.update(); // Update grafik
+                        }
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        function updateAllDevices() {
+            devices.forEach(device => fetchData(device));
+        }
+
+        function initializeCharts() {
+            devices.forEach(device => {
+                const ctx = document.getElementById(device.chartId).getContext('2d');
+                device.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [], // Label waktu untuk grafik
+                        datasets: [{
+                            label: `Voltage - Device ${device.ip}`,
+                            data: [],
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderWidth: 1,
+                            pointRadius: 0 // Titik data tanpa titik
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Time'
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Voltage (mV)'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        // Inisialisasi grafik setelah halaman dimuat
+        window.onload = function() {
+            initializeCharts();
+            setInterval(updateAllDevices, 1000);  // Perbarui setiap 1000 ms (1 detik)
+        }
+    </script>
+</head>
+<body>
+    <h1>Real-time Sensor Monitoring with Graphs</h1>
+    <p>Device 1 Voltage: <span id="voltage1">Loading...</span></p>
+    <canvas id="chart1" width="400" height="50"></canvas> <!-- Grafik untuk Device 1 -->
+    
+    <p>Device 2 Voltage: <span id="voltage2">Loading...</span></p>
+    <canvas id="chart2" width="400" height="50"></canvas> <!-- Grafik untuk Device 2 -->
+
+    <p>Device 3 Voltage: <span id="voltage3">Loading...</span></p>
+    <canvas id="chart3" width="400" height="50"></canvas> <!-- Grafik untuk Device 3 -->
+
+    <p>Device 4 Voltage: <span id="voltage4">Loading...</span></p>
+    <canvas id="chart4" width="400" height="50"></canvas> <!-- Grafik untuk Device 4 -->
+
+</body>
+</html>
