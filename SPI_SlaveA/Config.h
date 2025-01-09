@@ -52,14 +52,9 @@ bool verifyAndDumpDifference(const char *a_title, const uint8_t *a_buf, size_t a
     return verified;
 }
 
-void initializeBuffers(uint8_t *tx, uint8_t *rx, size_t size, size_t offset = 0)
-{
-    if (tx) {
-        for (size_t i = 0; i < size; i++) {
-            tx[i] = (i + offset) & 0xFF;
-        }
-    }
-    if (rx) {
-        memset(rx, 0, size);
+void initializeBuffers(uint8_t* tx, uint8_t* rx, size_t size) {
+    for (size_t i = 0; i < size; ++i) {
+        tx[i] = analogRead(A0) % 256;  // Simulate analog data for transmission (0-255 range)
+        rx[i] = 0;  // Reset receive buffer
     }
 }

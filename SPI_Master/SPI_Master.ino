@@ -2,48 +2,44 @@
 #include "Config.h"
 
 SPIClass master(VSPI);
+
 #ifdef CONFIG_IDF_TARGET_ESP32
-static constexpr uint8_t PIN_SS = 5;
+static constexpr uint8_t PIN_SSA = 5;  // CS untuk Slave A
+static constexpr uint8_t PIN_SSB = 33; // CS untuk Slave B
 #else
-static constexpr uint8_t PIN_SS = SS;
+static constexpr uint8_t PIN_SSA = SSA;
+static constexpr uint8_t PIN_SSB = SSB;
 #endif
 
-static constexpr size_t BUFFER_SIZE = 8;
-uint8_t tx_buf[BUFFER_SIZE] {1, 2, 3, 4, 5, 6, 7, 8};
-uint8_t rx_buf[BUFFER_SIZE] {0, 0, 0, 0, 0, 0, 0, 0};
+static constexpr size_t BUFFER_SIZE = 2;  // Sesuai dengan pengiriman data analog (2 byte)
+uint8_t tx_buf[BUFFER_SIZE] {0};          // Buffer pengiriman
+uint8_t rx_buf[BUFFER_SIZE] {0};          // Buffer penerimaan
 
-void setup()
-{
+void setup() {
     Serial.begin(115200);
-
     delay(2000);
 
-    pinMode(PIN_SS, OUTPUT);
-    digitalWrite(PIN_SS, HIGH);
-    master.begin(SCK, MISO, MOSI, PIN_SS);
+    pinMode(PIN_SSA, OUTPUT);
+    pinMode(PIN_SSB, OUTPUT);
+    digitalWrite(PIN_SSA, HIGH);  // Deselect Slave A
+    digitalWrite(PIN_SSB, HIGH);  // Deselect Slave B
 
-    delay(2000);
-
-    Serial.println("start spi master");
+    master.begin(SCK, MISO, MOSI, PIN_SSA);  // Inisialisasi SPI
+    Serial.println("SPI Master initialized");
 }
 
-void loop()
-{
-    // initialize tx/rx buffers
+void loop() {
     initializeBuffers(tx_buf, rx_buf, BUFFER_SIZE);
 
     master.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
-    digitalWrite(PIN_SS, LOW);
+    digitalWrite(PIN_SSA, LOW);  // Pilih Slave A
     master.transferBytes(tx_buf, rx_buf, BUFFER_SIZE);
-    digitalWrite(PIN_SS, HIGH);
+    digitalWrite(PIN_SSA, HIGH); // Deselect Slave A
     master.endTransaction();
 
-    // verify and dump difference with received data
-    if (verifyAndDumpDifference("master", tx_buf, BUFFER_SIZE, "slave", rx_buf, BUFFER_SIZE)) {
-        Serial.println("successfully received expected data from slave");
-    } else {
-        Serial.println("unexpected difference found between master/slave data");
-    }
+    uint16_t analogValue = (rx_buf[0] << 8) | rx_buf[1];  // Kombinasikan dua byte menjadi satu nilai
+    Serial.print("Received analog value from Slave A: ");
+    Serial.println(analogValue);
 
-    // delay(2000);
+    delay(500);  // Interval untuk pembacaan berikutnya
 }
