@@ -45,5 +45,5 @@ void loop()
         Serial.println("unexpected difference found between master/slave data");
     }
 
-    delay(2000);
+    // delay(2000);
 }

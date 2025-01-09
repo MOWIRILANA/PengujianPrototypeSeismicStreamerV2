@@ -1,4 +1,4 @@
-#include <ESP32SPISlave.h>
+#include "ESP32SPISlave_A.h"
 #include "Config.h"
 
 ESP32SPISlave slave;
