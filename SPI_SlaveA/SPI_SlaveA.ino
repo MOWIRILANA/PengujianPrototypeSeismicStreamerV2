@@ -1,21 +1,35 @@
-#include <SPI.h>
+#include "ESP32SPISlave_A.h"
+#include "Config.h"
 
-const int CS_PIN = 5; // Chip Select
-const int ANALOG_PIN = 4; // Pin analog untuk membaca data
+ESP32SPISlave slave;
+
+static constexpr size_t BUFFER_SIZE = 8;
+uint8_t tx_buf[BUFFER_SIZE] {0};
+uint8_t rx_buf[BUFFER_SIZE] {0};
 
 void setup() {
-  pinMode(CS_PIN, OUTPUT);
-  SPI.begin();
-  Serial.begin(115200);
+    Serial.begin(115200);
+    delay(2000);
+
+    slave.setDataMode(SPI_MODE0);
+    slave.setQueueSize(1);
+    slave.begin();
+
+    Serial.println("SPI Slave A initialized");
 }
 
 void loop() {
-  int analogValue = analogRead(ANALOG_PIN); // Baca nilai analog
-  digitalWrite(CS_PIN, LOW); // Pilih slave
-  SPI.transfer(analogValue >> 8); // Kirim byte tinggi
-  SPI.transfer(analogValue & 0xFF); // Kirim byte rendah
-  digitalWrite(CS_PIN, HIGH); // Lepaskan slave
+    uint16_t analogValue = analogRead(4);  // Baca dari pin analog lainnya
+    tx_buf[0] = analogValue >> 8;           // High byte
+    tx_buf[1] = analogValue & 0xFF;         // Low byte
 
-  Serial.println(analogValue); // Tampilkan nilai analog di Serial Monitor
-  delay(1000); // Tunggu 1 detik
+    const size_t send_bytes = slave.transfer(tx_buf, rx_buf, BUFFER_SIZE);
+
+    // Debug: Tampilkan data yang dikirim dan diterima
+    Serial.print("Analog value A sent: ");
+    Serial.println((tx_buf[0] << 8) | tx_buf[1]);
+    // Serial.print("Analog value A sent: ");
+    // slave.transfer(tx_buf, rx_buf, 2);
+
+    delay(100);
 }

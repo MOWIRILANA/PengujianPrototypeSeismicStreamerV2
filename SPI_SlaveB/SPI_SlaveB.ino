@@ -35,7 +35,7 @@ void loop() {
     const size_t send_bytes = slave.transfer(tx_buf, rx_buf, BUFFER_SIZE);
 
     // Debug: Tampilkan data yang dikirim dan diterima
-    Serial.print("Analog value sent: ");
+    Serial.print("Analog value B sent: ");
     Serial.println((tx_buf[0] << 8) | tx_buf[1]);
     
     delay(100);  // Interval waktu untuk pembacaan berikutnya
