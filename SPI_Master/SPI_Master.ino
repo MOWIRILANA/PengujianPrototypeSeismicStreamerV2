@@ -32,6 +32,7 @@ void loop() {
     initializeBuffers(tx_buf, rx_buf, BUFFER_SIZE);
 
     // Komunikasi dengan Slave A
+    digitalWrite(PIN_SSB, HIGH);
     master.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
     digitalWrite(PIN_SSA, LOW);
     master.transferBytes(tx_buf, rx_buf, BUFFER_SIZE);
@@ -41,9 +42,11 @@ void loop() {
     Serial.print("Analog value from Slave A: ");
     Serial.println(analogValueA);
 
-    delay(100);  // Jeda untuk menghindari konflik bus
+    delay(10);  // Jeda untuk menghindari konflik bus
+    initializeBuffers(tx_buf, rx_buf, BUFFER_SIZE);
 
     // Komunikasi dengan Slave B
+    digitalWrite(PIN_SSA, HIGH);
     master.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0));
     digitalWrite(PIN_SSB, LOW);
     master.transferBytes(tx_buf, rx_buf, BUFFER_SIZE);
@@ -53,5 +56,5 @@ void loop() {
     Serial.print("Analog value from Slave B: ");
     Serial.println(analogValueB);
 
-    delay(500);  // Jeda sebelum membaca lagi
+    delay(50);  // Jeda sebelum membaca lagi
 }
