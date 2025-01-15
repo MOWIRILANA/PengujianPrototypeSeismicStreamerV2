@@ -17,7 +17,7 @@ void setup() {
     // pinMode(MISO, OUTPUT);
     // pinMode(SS, INPUT);
     // Serial.println(SS);
-    Serial.println("SPI Slave A initialized");
+    Serial.println("SPI Slave 5 initialized");
 }
 
 void loop() {
@@ -25,7 +25,7 @@ void loop() {
     // pinMode(MISO, OUTPUT);
     readanalog();
     const size_t send_bytes = slave.transfer(tx_buf, rx_buf, BUFFER_SIZE);
-    Serial.print("Analog value A sent: ");
+    Serial.print("Analog value 5 sent: ");
     Serial.println((tx_buf[0] << 8) | tx_buf[1]);
     delay(10);
     // }

@@ -16,14 +16,14 @@ void setup() {
     slave.begin();
     // pinMode(MISO, OUTPUT);
     // pinMode(SS, INPUT);
-    Serial.println("SPI Slave B initialized");
+    Serial.println("SPI Slave 33 initialized");
 }
 
 void loop() {
     // if(digitalRead(SS) == LOW){
     readanalog();
     const size_t send_bytes = slave.transfer(tx_buf, rx_buf, BUFFER_SIZE);
-    Serial.print("Analog value B sent: ");
+    Serial.print("Analog value 33 sent: ");
     Serial.println((tx_buf[0] << 8) | tx_buf[1]);
     delay(10);
     // }
