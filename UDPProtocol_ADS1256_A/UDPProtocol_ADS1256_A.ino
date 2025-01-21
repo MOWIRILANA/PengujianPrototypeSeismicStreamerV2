@@ -9,14 +9,13 @@
 
 #define SPISPEED 2500000  // SPI speed for communication with ADS1256
 
-const int UDP_PACKET_SIZE = 24;  // UDP time stamp is in the first 48 bytes of the message.
-char packetBuffer[UDP_PACKET_SIZE];  // Buffer for both incoming and outgoing packets.
-char ReplyBuffer[] = "acknowledged";
-
 EthernetUDP Udp;
 
 IPAddress remoteIP(255, 255, 255, 255);  // Replace with the IP of the laptop or server
 const unsigned int remotePort = 5000;   // Port to send data to
+
+unsigned long lastTime = 0;
+unsigned long packetCount = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -32,7 +31,7 @@ void setup() {
 
   // Ethernet Initialization
   Serial.println("\n\tUDP Client v1.0\r\n");
-  Ethernet.init(CS);
+  Ethernet.init(15);
   WizReset();
 
   Serial.println("Starting ETHERNET connection...");
@@ -47,21 +46,18 @@ void setup() {
 }
 
 void loop() {
-  // Read analog values from A0, A1, and A2 (Potentiometers)
-  float voltageA0 = readSingleEndedChannel(0); // Channel 0 corresponds to AIN0
-  float voltageA1 = readSingleEndedChannel(1); // Channel 1 corresponds to AIN1
-  float voltageA2 = readSingleEndedChannel(2); // Channel 2 corresponds to AIN2
+  
+  float voltages[3];
 
-  Serial.print(voltageA0);
-  Serial.print(";");
-  Serial.print(voltageA1);
-  Serial.print(";");
-  Serial.println(voltageA2);
-  // Prepare data to send
+  for (int i = 0; i < 3; i++) {
+    voltages[i] = readSingleEndedChannel(i);
+  }
+
+  // Siapkan data untuk dikirim
   char message[64];
-  snprintf(message, sizeof(message), "A1: %.6f | A2: %.6f | A3: %.6f", voltageA0, voltageA1, voltageA2);
+  snprintf(message, sizeof(message), "A1: %.6f | A2: %.6f | A3: %.6f", voltages[0], voltages[1], voltages[2]);
 
-  // Send a UDP packetM
+  // Send a UDP packet
   if (Udp.beginPacket(remoteIP, remotePort)) {
     Udp.write(message);
     if (Udp.endPacket()) {
@@ -74,28 +70,22 @@ void loop() {
     Serial.println("Failed to start UDP packet.");
   }
 
-  delay(1);  // Minimal delay for sending data
+  unsigned long currentTime = millis();
+  if (currentTime - lastTime >= 1000) {
+    Serial.print("Packets sent in the last second: ");
+    Serial.println(packetCount);
+    packetCount = 0;
+    lastTime = currentTime;
+  }
+  delay(1);
 }
 
-// void readsensorads(){
-//   float voltageA0 = readSingleEndedChannel(0); // Channel 0 corresponds to AIN0
-//   float voltageA1 = readSingleEndedChannel(1); // Channel 1 corresponds to AIN1
-//   float voltageA2 = readSingleEndedChannel(2); // Channel 2 corresponds to AIN2
-
-//   Serial.print(voltageA0);
-//   Serial.print(";");
-//   Serial.print(voltageA1);
-//   Serial.print(";");
-//   Serial.println(voltageA2);
-// }
-
-// Function to configure ADS1256
 void configureADS1256() {
   SPI.beginTransaction(SPISettings(SPISPEED, MSBFIRST, SPI_MODE1));
   digitalWrite(CS, LOW);
 
   delay(2);
-  SPI.transfer(0xFE); // Reset command
+  SPI.transfer(0xFE);
   delay(5);
 
   // Set STATUS register (most significant bit first, buffer disabled)

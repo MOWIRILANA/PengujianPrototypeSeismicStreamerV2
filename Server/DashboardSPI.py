@@ -5,7 +5,7 @@ from threading import Thread, Lock
 import time
 
 # Pastikan port serial sesuai dengan perangkat Anda
-ser = serial.Serial('COM9', 115200, timeout=1)
+ser = serial.Serial('COM4', 115200, timeout=1)
 
 # Data untuk menyimpan pembacaan
 x_data = []

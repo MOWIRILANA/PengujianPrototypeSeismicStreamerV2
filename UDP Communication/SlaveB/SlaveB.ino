@@ -7,15 +7,17 @@
 #define VMOSI 23
 #define RDY 21  
 
-#define SPISPEED 10000000    
+#define SPISPEED 2500000      
 // #define SPISPEED 80000000
 
 unsigned long previousMillis = 0;  // Menyimpan waktu sebelumnya
 unsigned long sampleCount = 0;     // Hitungan sampel per detik
 unsigned long lastReadMillis = 0;  // Menyimpan waktu pembacaan terakhir
 
-const int numChannels = 4;
+const int numChannels = 3;
 float voltages[numChannels];
+
+#define convertSigned24BitToLong(value) ((value) & (1l << 23) ? (value) - 0x1000000 : value)
 
 void setup() {
   Serial.begin(115200);
@@ -41,7 +43,7 @@ void loop() {
   }
 
   // Hitung dan tampilkan jumlah sampel per detik
-  if (currentMillis - previousMillis >= 100) {  // Setiap 1 detik
+  if (currentMillis - previousMillis >= 1000) {  // Setiap 1 detik
     Serial.print("Samples per second: ");
     Serial.println(sampleCount);
     sampleCount = 0;  // Reset hitungan sampel
@@ -126,6 +128,7 @@ float readSingleEndedChannel(byte channel) {
   rawValue |= SPI.transfer(0);
   rawValue <<= 8;
   rawValue |= SPI.transfer(0);
+  rawValue = convertSigned24BitToLong(rawValue);
 
   digitalWrite(CS, HIGH);
   SPI.endTransaction();
