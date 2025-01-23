@@ -1,94 +1,59 @@
 import serial
+import threading
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
-from threading import Thread, Lock
+from collections import deque
 import time
 
-# Pastikan port serial sesuai dengan perangkat Anda
-ser = serial.Serial('COM4', 115200, timeout=1)
+# Konfigurasi port serial
+serial_port = 'COM3'  # Ganti sesuai dengan port serial Anda
+baud_rate = 57600
 
-# Data untuk menyimpan pembacaan
-x_data = []
-y1_data = []
-y2_data = []
-y3_data = []
+# Variabel untuk menyimpan data
+adc_values = deque(maxlen=10000)  # Menyimpan maksimal 100 data
+time_stamps = deque(maxlen=10000)
+lock = threading.Lock()  # Untuk sinkronisasi antara thread
 
-# Kunci untuk sinkronisasi akses data
-data_lock = Lock()
-
-# Penghitung jumlah data per detik
-data_count = 0
-data_sum = 0
-last_time = time.time()
-
+# Fungsi untuk membaca data dari serial
 def read_serial():
-    global data_count, data_sum
-    frame = 0
+    global adc_values, time_stamps
+    try:
+        ser = serial.Serial(serial_port, baud_rate)
+        while True:
+            line = ser.readline().decode('utf-8').strip()  # Baca satu baris data
+            if line.startswith("ADC"):  # Filter data ADC
+                _, value = line.split(",")  # Pisahkan label dan nilai
+                with lock:  # Sinkronisasi akses ke data
+                    adc_values.append(int(value))
+                    time_stamps.append(time.time())  # Gunakan waktu dalam detik
+    except Exception as e:
+        print(f"Error in serial thread: {e}")
+
+# Fungsi untuk memperbarui grafik
+def update_graph():
+    plt.ion()  # Aktifkan mode interaktif
+    fig, ax = plt.subplots()
     while True:
-        line = ser.readline().decode('utf-8').strip()
-        try:
-            v0, v1, v2 = map(float, line.split(','))
-            with data_lock:  # Sinkronisasi akses data
-                x_data.append(frame)
-                y1_data.append(v0)
-                y2_data.append(v1)
-                y3_data.append(v2)
+        with lock:  # Sinkronisasi akses ke data
+            if len(adc_values) > 0:
+                ax.clear()
+                times = [t - time_stamps[0] for t in time_stamps]  # Waktu relatif
+                ax.plot(times, adc_values, label="ADC Value")
+                ax.set_title("Real-time ADC Data")
+                ax.set_xlabel("Time (seconds)")
+                ax.set_ylabel("ADC Value")
+                ax.legend()
+                plt.pause(0.1)  # Perbarui grafik setiap 100 ms
 
-                data_count += 1  # Hitung data yang diterima
-                data_sum += (v0 + v1 + v2)  # Tambahkan nilai untuk menghitung rata-rata
+# Membuat dan menjalankan thread
+serial_thread = threading.Thread(target=read_serial, daemon=True)
+graph_thread = threading.Thread(target=update_graph, daemon=True)
 
-                if len(x_data) > 200:  # Batasi panjang data
-                    x_data.pop(0)
-                    y1_data.pop(0)
-                    y2_data.pop(0)
-                    y3_data.pop(0)
-            frame += 1
-        except ValueError:
-            pass  # Abaikan baris yang tidak dapat diproses
-
-def init():
-    ax.set_xlim(0, 200)
-    ax.set_ylim(-1000, 1000)  # Sesuaikan range sesuai kebutuhan
-    ax.set_xlabel('Sample')
-    ax.set_ylabel('Geophone Signal')
-    ax.legend()
-    return line1, line2, line3, count_text, avg_text
-
-def update(frame):
-    global data_count, data_sum, last_time
-    current_time = time.time()
-
-    # Hitung data per detik
-    if current_time - last_time >= 1:
-        last_time = current_time
-        with data_lock:  # Sinkronisasi akses data
-            count_text.set_text(f'Data/s: {data_count}')
-            if data_count > 0:
-                avg_data = data_sum / (data_count * 3)  # Rata-rata dari 3 sinyal
-                avg_text.set_text(f'Avg Data/s: {avg_data:.2f}')
-            else:
-                avg_text.set_text(f'Avg Data/s: 0.00')
-        data_count = 0  # Reset penghitung data
-        data_sum = 0  # Reset jumlah data
-
-    with data_lock:  # Sinkronisasi akses data
-        line1.set_data(range(len(x_data)), y1_data)
-        line2.set_data(range(len(x_data)), y2_data)
-        line3.set_data(range(len(x_data)), y3_data)
-    return line1, line2, line3, count_text, avg_text
-
-# Setup Matplotlib
-fig, ax = plt.subplots()
-line1, = ax.plot([], [], label='Geophone X')
-line2, = ax.plot([], [], label='Geophone Y')
-line3, = ax.plot([], [], label='Geophone Z')
-count_text = ax.text(0.95, 0.95, '', transform=ax.transAxes, ha='right', va='top')
-avg_text = ax.text(0.95, 0.90, '', transform=ax.transAxes, ha='right', va='top')
-
-# Jalankan thread untuk membaca data serial
-serial_thread = Thread(target=read_serial, daemon=True)
 serial_thread.start()
+graph_thread.start()
 
-# Animasi grafik
-ani = FuncAnimation(fig, update, init_func=init, interval=50, blit=True)
-plt.show()
+# Menjaga program tetap berjalan
+try:
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("Program dihentikan.")

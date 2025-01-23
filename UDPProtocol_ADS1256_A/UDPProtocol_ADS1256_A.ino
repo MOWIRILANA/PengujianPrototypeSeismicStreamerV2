@@ -3,19 +3,23 @@
 #include <EthernetUdp.h>
 #include "IPLaptop.h"
 
-// Pin Definitions
+// Pin Definitions AD1256
 #define CS 5    // Chip Select
-#define RDY 21  // Data Ready
+#define MISOA 19
+#define MOSIA 23
+#define SCLKA 18
+#define RDY 21
 
-#define SPISPEED 2500000  // SPI speed for communication with ADS1256
+#define SPISPEED 2500000 
 
 EthernetUDP Udp;
 
-IPAddress remoteIP(255, 255, 255, 255);  // Replace with the IP of the laptop or server
-const unsigned int remotePort = 5000;   // Port to send data to
+IPAddress remoteIP(255, 255, 255, 255);
+const unsigned int remotePort = 5000;
 
-unsigned long lastTime = 0;
-unsigned long packetCount = 0;
+unsigned long previousMillis = 0;
+unsigned long interval = 1000;
+int dataCount = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -25,7 +29,7 @@ void setup() {
   pinMode(CS, OUTPUT);
   digitalWrite(CS, HIGH); // Ensure CS is high to start
   pinMode(RDY, INPUT);
-  SPI.begin(18, 19, 23, CS);
+  SPI.begin(SCLKA, MISOA, MOSIA, CS);
   configureADS1256();
   Serial.println("ADS1256 initialized. Starting readings...");
 
@@ -47,35 +51,19 @@ void setup() {
 
 void loop() {
   
-  float voltages[3];
+  // float voltages[1];
+  Serial.println(readSingleEndedChannel(1));
+  // Serial.println(voltages);
 
-  for (int i = 0; i < 3; i++) {
-    voltages[i] = readSingleEndedChannel(i);
-  }
+  dataCount++;  // Menambah jumlah data yang diterima
 
-  // Siapkan data untuk dikirim
-  char message[64];
-  snprintf(message, sizeof(message), "A1: %.6f | A2: %.6f | A3: %.6f", voltages[0], voltages[1], voltages[2]);
-
-  // Send a UDP packet
-  if (Udp.beginPacket(remoteIP, remotePort)) {
-    Udp.write(message);
-    if (Udp.endPacket()) {
-      Serial.println("UDP packet sent successfully!");
-      Serial.println(message);
-    } else {
-      Serial.println("Error sending UDP packet.");
-    }
-  } else {
-    Serial.println("Failed to start UDP packet.");
-  }
-
-  unsigned long currentTime = millis();
-  if (currentTime - lastTime >= 1000) {
-    Serial.print("Packets sent in the last second: ");
-    Serial.println(packetCount);
-    packetCount = 0;
-    lastTime = currentTime;
+  // Menghitung jumlah data setiap detik
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= interval) {
+    Serial.print("Data received per second: ");
+    Serial.println(dataCount);  // Tampilkan jumlah data per detik
+    dataCount = 0;  // Reset counter
+    previousMillis = currentMillis;  // Update waktu sebelumnya
   }
   delay(1);
 }
