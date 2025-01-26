@@ -14,24 +14,15 @@ void setup() {
     slave.setDataMode(SPI_MODE0);
     slave.setQueueSize(1);
     slave.begin();
-    // pinMode(MISO, OUTPUT);
-    // pinMode(SS, INPUT);
-    // Serial.println(SS);
-    Serial.println("SPI Slave 5 initialized");
+    Serial.println("SPI Slave 22 initialized");
 }
 
 void loop() {
-    // if(digitalRead(SS) == LOW){
-    // pinMode(MISO, OUTPUT);
     readanalog();
-    const size_t send_bytes = slave.transfer(tx_buf, rx_buf, BUFFER_SIZE);
-    Serial.print("Analog value 5 sent: ");
+    const size_t send_bytes = slave.transfer(tx_buf, NULL, BUFFER_SIZE);
+    Serial.print("Analog value 22 sent: ");
     Serial.println((tx_buf[0] << 8) | tx_buf[1]);
     delay(10);
-    // }
-    // else{
-    //   pinMode(MISO, INPUT);
-    // }
 }
 
 void readanalog(){

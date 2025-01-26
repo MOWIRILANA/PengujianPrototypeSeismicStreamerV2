@@ -3,23 +3,16 @@
 #include <EthernetUdp.h>
 #include "IPLaptop.h"
 
-// Pin Definitions AD1256
-#define CS 5    // Chip Select
-#define MISOA 19
-#define MOSIA 23
-#define SCLKA 18
-#define RDY 21
+// Pin Definitions
+#define CS 15    // Chip Select
+#define RDY 21  // Data Ready
 
-#define SPISPEED 2500000 
+#define SPISPEED 2500000  // SPI speed for communication with ADS1256
 
 EthernetUDP Udp;
 
-IPAddress remoteIP(255, 255, 255, 255);
-const unsigned int remotePort = 5000;
-
-unsigned long previousMillis = 0;
-unsigned long interval = 1000;
-int dataCount = 0;
+IPAddress remoteIP(255, 255, 255, 255);  // Replace with the IP of the laptop or server
+const unsigned int remotePort = 5000;   // Port to send data to
 
 void setup() {
   Serial.begin(115200);
@@ -29,13 +22,13 @@ void setup() {
   pinMode(CS, OUTPUT);
   digitalWrite(CS, HIGH); // Ensure CS is high to start
   pinMode(RDY, INPUT);
-  SPI.begin(SCLKA, MISOA, MOSIA, CS);
+  SPI.begin(18, 19, 23, CS);
   configureADS1256();
   Serial.println("ADS1256 initialized. Starting readings...");
 
   // Ethernet Initialization
   Serial.println("\n\tUDP Client v1.0\r\n");
-  Ethernet.init(15);
+  Ethernet.init(5);
   WizReset();
 
   Serial.println("Starting ETHERNET connection...");
@@ -50,30 +43,55 @@ void setup() {
 }
 
 void loop() {
-  
-  // float voltages[1];
-  Serial.println(readSingleEndedChannel(1));
-  // Serial.println(voltages);
+  // Read analog values from A0, A1, and A2 (Potentiometers)
+  float voltageA0 = readSingleEndedChannel(0); // Channel 0 corresponds to AIN0
+  float voltageA1 = readSingleEndedChannel(1); // Channel 1 corresponds to AIN1
+  float voltageA2 = readSingleEndedChannel(2); // Channel 2 corresponds to AIN2
 
-  dataCount++;  // Menambah jumlah data yang diterima
+  Serial.print(voltageA0);
+  Serial.print(";");
+  Serial.print(voltageA1);
+  Serial.print(";");
+  Serial.println(voltageA2);
+  // Prepare data to send
+  char message[64];
+  snprintf(message, sizeof(message), "A1: %.6f | A2: %.6f | A3: %.6f", voltageA0, voltageA1, voltageA2);
 
-  // Menghitung jumlah data setiap detik
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= interval) {
-    Serial.print("Data received per second: ");
-    Serial.println(dataCount);  // Tampilkan jumlah data per detik
-    dataCount = 0;  // Reset counter
-    previousMillis = currentMillis;  // Update waktu sebelumnya
+  // Send a UDP packetM
+  if (Udp.beginPacket(remoteIP, remotePort)) {
+    Udp.write(message);
+    if (Udp.endPacket()) {
+      Serial.println("UDP packet sent successfully!");
+      Serial.println(message);
+    } else {
+      Serial.println("Error sending UDP packet.");
+    }
+  } else {
+    Serial.println("Failed to start UDP packet.");
   }
-  delay(1);
+
+  delay(1);  // Minimal delay for sending data
 }
 
+// void readsensorads(){
+//   float voltageA0 = readSingleEndedChannel(0); // Channel 0 corresponds to AIN0
+//   float voltageA1 = readSingleEndedChannel(1); // Channel 1 corresponds to AIN1
+//   float voltageA2 = readSingleEndedChannel(2); // Channel 2 corresponds to AIN2
+
+//   Serial.print(voltageA0);
+//   Serial.print(";");
+//   Serial.print(voltageA1);
+//   Serial.print(";");
+//   Serial.println(voltageA2);
+// }
+
+// Function to configure ADS1256
 void configureADS1256() {
   SPI.beginTransaction(SPISettings(SPISPEED, MSBFIRST, SPI_MODE1));
   digitalWrite(CS, LOW);
 
   delay(2);
-  SPI.transfer(0xFE);
+  SPI.transfer(0xFE); // Reset command
   delay(5);
 
   // Set STATUS register (most significant bit first, buffer disabled)

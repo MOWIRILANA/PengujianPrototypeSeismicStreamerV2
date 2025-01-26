@@ -226,10 +226,10 @@ public:
     /// @brief initialize SPI with the default pin assignment for HSPI, or VSPI
     /// @param spi_bus HSPI, FSPI or VSPI
     /// @return true if initialization succeeded, false otherwise
-    bool begin(const uint8_t spi_bus = HSPI)
+    bool begin(const uint8_t spi_bus = VSPI)
     {
 #ifdef CONFIG_IDF_TARGET_ESP32
-        this->ctx.if_cfg.spics_io_num = (spi_bus == VSPI) ? SS : 33;
+        this->ctx.if_cfg.spics_io_num = (spi_bus == VSPI) ? SS : 5;
         this->ctx.bus_cfg.sclk_io_num = (spi_bus == VSPI) ? SCK : 18;
         this->ctx.bus_cfg.mosi_io_num = (spi_bus == VSPI) ? MOSI : 23;
         this->ctx.bus_cfg.miso_io_num = (spi_bus == VSPI) ? MISO : 19;

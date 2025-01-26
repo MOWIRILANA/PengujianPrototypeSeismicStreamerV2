@@ -1,4 +1,5 @@
 #include "ESP32SPISlave_B.h"
+#include <SPI.h>
 #include "Config.h"
 
 ESP32SPISlave slave;
@@ -14,26 +15,19 @@ void setup() {
     slave.setDataMode(SPI_MODE0);
     slave.setQueueSize(1);
     slave.begin();
-    // pinMode(MISO, OUTPUT);
-    // pinMode(SS, INPUT);
-    Serial.println("SPI Slave 33 initialized");
+    Serial.println("SPI Slave 2 initialized");
 }
 
 void loop() {
-    // if(digitalRead(SS) == LOW){
     readanalog();
-    const size_t send_bytes = slave.transfer(tx_buf, rx_buf, BUFFER_SIZE);
-    Serial.print("Analog value 33 sent: ");
+    const size_t send_bytes = slave.transfer(tx_buf, NULL, BUFFER_SIZE);
+    Serial.print("Analog value 2 sent: ");
     Serial.println((tx_buf[0] << 8) | tx_buf[1]);
     delay(10);
-    // }
-    // else{
-    //   pinMode(MISO, INPUT);
-    // }
 }
 
 void readanalog(){
-  uint16_t analogValue = analogRead(4);  // Baca dari pin analog lainnya
-    tx_buf[0] = analogValue >> 8;           // High byte
-    tx_buf[1] = analogValue & 0xFF;         // Low byte
+  uint16_t analogValue = analogRead(4);  
+    tx_buf[0] = analogValue >> 8;
+    tx_buf[1] = analogValue & 0xFF;
 }
