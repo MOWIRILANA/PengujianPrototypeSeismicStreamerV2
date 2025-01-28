@@ -57,19 +57,7 @@ void communicateWithSlave(uint8_t csPin) {
     Serial.print(": ");
     Serial.println(analogValue);
 
-    bool isValid = (analogValue >= 0 && analogValue <= 4095);
-    uint8_t ack = isValid ? 0x01 : 0x00;  // 0x01 untuk ACK jika data valid, 0x00 untuk NACK jika data tidak valid
-    master.transfer(ack);
-
     master.endTransaction();
     digitalWrite(csPin, HIGH);
-
-    
-
-    // Jika data tidak valid, Master bisa mengulang permintaan data
-    if (!isValid) {
-        Serial.println("Data invalid, requesting again...");
-        // Anda bisa menambahkan logika untuk mengulang pengambilan data jika perlu
-    }
     
 }
