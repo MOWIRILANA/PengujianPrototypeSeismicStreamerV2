@@ -1,59 +1,42 @@
-#include "ADS1256_M.h"
+#include <SPI.h>
 
-// Inisialisasi pin sesuai dengan konfigurasi perangkat keras
-ADS1256 A(21, 0, 0, 5, 2.500); // DRDY, RESET, SYNC(PDWN), CS, VREF(float)
-
-// Variabel untuk menghitung jumlah data per detik
-unsigned long prevMillis = 0;
-unsigned int dataCount = 0;
-
-const int numChannels = 3;
-float voltages[numChannels];
-
-
+// Pin Definitions
+#define CS_SLAVE_A 2  // Chip Select untuk Slave A
+#define CS_SLAVE_B 22 // Chip Select untuk Slave B
 
 void setup() {
-  Serial.begin(115200); // Pastikan baud rate sesuai dengan kebutuhan komunikasi serial
+    Serial.begin(115200);
+    delay(1000);
 
-  // Tunggu hingga serial siap
-  while (!Serial) { ; }
+    // Inisialisasi pin CS
+    pinMode(CS_SLAVE_A, OUTPUT);
+    pinMode(CS_SLAVE_B, OUTPUT);
+    digitalWrite(CS_SLAVE_A, HIGH); // Nonaktifkan Slave A
+    digitalWrite(CS_SLAVE_B, HIGH); // Nonaktifkan Slave B
 
-  // Inisialisasi ADS1256
-  Serial.println("Inisialisasi ADS1256...");
-  A.InitializeADC();
-
-  // Konfigurasi awal: set PGA, kanal, dan DRATE
-  A.setPGA(PGA_1);             // Penguatan = 1
-  A.setMUX(SING_0);          // Membaca input diferensial antara AIN0 dan AIN1
-  A.setDRATE(DRATE_30000SPS);    // Sampling rate = 100 sampel per detik
-
-  Serial.println("Inisialisasi selesai.");
+    // Inisialisasi SPI
+    SPI.begin();
+    Serial.println("SPI Master initialized.");
 }
 
 void loop() {
-  Serial.println("starloop");
+    uint8_t dataFromSlaveA = communicateWithSlave(CS_SLAVE_A);
+    uint8_t dataFromSlaveB = communicateWithSlave(CS_SLAVE_B);
 
-  float data = A.readSingleEndedChannel(3);
-  Serial.println(data);
-  // for (int i = 0; i < 3; i++) {
-  //   voltages[i] = A.readSingleEndedChannel(i);
-  // }
-  // for(int i = 0; i<numChannels; i++){
-  //   Serial.print(voltages[i]);
-  //   if(i<numChannels-1){
-  //     Serial.print(",");
-  //   }else{
-  //     Serial.println();
-  //   }
-  // }
-  dataCount++;
+    Serial.print("Data from Slave A: ");
+    Serial.println(dataFromSlaveA);
 
-  // Hitung jumlah data per detik
-  unsigned long currentMillis = millis();
-  if (currentMillis - prevMillis >= 1000) {
-    Serial.print("Jumlah data dalam 1 detik: ");
-    Serial.println(dataCount);
-    dataCount = 0;
-    prevMillis = currentMillis;
-  }
+    Serial.print("Data from Slave B: ");
+    Serial.println(dataFromSlaveB);
+
+    delay(100); // Jeda sebelum siklus berikutnya
+}
+
+uint8_t communicateWithSlave(uint8_t csPin) {
+    digitalWrite(csPin, LOW); // Pilih slave
+    SPI.beginTransaction(SPISettings(1000000, MSBFIRST, SPI_MODE0)); // Konfigurasi SPI
+    uint8_t data = SPI.transfer(0x00); // Kirim dan terima data
+    SPI.endTransaction();
+    digitalWrite(csPin, HIGH); // Lepaskan slave
+    return data;
 }

@@ -5,8 +5,8 @@
 ESP32SPISlave slave;
 
 static constexpr size_t BUFFER_SIZE = 8;
-uint8_t tx_buf[BUFFER_SIZE] {0};
-uint8_t rx_buf[BUFFER_SIZE] {0};
+uint8_t tx_buf[BUFFER_SIZE] {1, 2, 3, 4, 5, 6, 7, 8};
+uint8_t rx_buf[BUFFER_SIZE] {0, 0, 0, 0, 0, 0, 0, 0};
 
 void setup() {
     Serial.begin(115200);
@@ -14,7 +14,9 @@ void setup() {
 
     slave.setDataMode(SPI_MODE0);
     slave.setQueueSize(1);
-    slave.begin();
+    slave.begin(2);
+    Serial.print("SS:");
+    Serial.println(SS);
     Serial.println("SPI Slave 2 initialized");
 }
 

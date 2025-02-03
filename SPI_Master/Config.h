@@ -54,8 +54,6 @@ bool verifyAndDumpDifference(const char *a_title, const uint8_t *a_buf, size_t a
 
 void initializeBuffers(uint8_t *tx, uint8_t *rx, size_t size, size_t offset = 0)
 {
-    for (size_t i = 0; i < size; i++) {
-        tx[i] = 0;
-        rx[i] = 0;
-    }
+    memset(tx, 0, size);  // Reset tx_buf
+    memset(rx, 0, size);  // Reset rx_buf
 }
