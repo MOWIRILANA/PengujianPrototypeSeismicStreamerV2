@@ -1,9 +1,11 @@
 #include <SPI.h>
 
 // Pin Definitions
-#define CS 25    
+#define CS 5    
 #define RDY 21  
+#define RESET 22   // Add reset pin (choose any available pin)
 
+// SPI Speed
 #define SPISPEED 2500000  
 
 void setup() {
@@ -14,7 +16,12 @@ void setup() {
   pinMode(CS, OUTPUT);
   digitalWrite(CS, HIGH); // Ensure CS is high to start
   pinMode(RDY, INPUT);
+  pinMode(RESET, OUTPUT);  // Set RESET pin as OUTPUT
+  digitalWrite(RESET, HIGH);  // Ensure RESET is high initially
   SPI.begin(18, 19, 23, CS);
+  
+  // Reset ADS1256
+  resetADS1256();
   configureADS1256();
   Serial.println("ADS1256 initialized. Starting readings...");
 }
@@ -24,7 +31,7 @@ void loop() {
   delay(1);
 }
 
-void readsensorads(){
+void readsensorads() {
   float voltageA0 = readSingleEndedChannel(0); 
   float voltageA1 = readSingleEndedChannel(1); 
   float voltageA2 = readSingleEndedChannel(2); 
@@ -109,4 +116,12 @@ float readSingleEndedChannel(byte channel) {
 
   float voltage = rawValue * (3.3 / (0x7FFFFF)); // Assuming reference voltage is 3.3V
   return voltage;
+}
+
+// Function to reset ADS1256
+void resetADS1256() {
+  digitalWrite(RESET, LOW);  // Set RESET pin LOW to reset the ADS1256
+  delay(10);                  // Wait for a short time
+  digitalWrite(RESET, HIGH);  // Set RESET pin HIGH to complete the reset
+  delay(10);                  // Wait to stabilize after reset
 }
