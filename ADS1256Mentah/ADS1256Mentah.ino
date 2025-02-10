@@ -5,7 +5,7 @@
 #define RDY 21  
 #define RESET 22   // Add reset pin (choose any available pin)
 
-// SPI Speed
+// SPI Speed    
 #define SPISPEED 2500000  
 
 void setup() {
@@ -36,11 +36,11 @@ void readsensorads() {
   float voltageA1 = readSingleEndedChannel(1); 
   float voltageA2 = readSingleEndedChannel(2); 
 
-  Serial.print(voltageA0);
-  Serial.print(";");
-  Serial.print(voltageA1);
-  Serial.print(";");
-  Serial.println(voltageA2);
+  for (int i = 0; i<4; i++){
+    Serial.print(readSingleEndedChannel(i));
+    if (i<3) Serial.print(",");
+  }
+  Serial.println();
 }
 
 // Function to configure ADS1256

@@ -7,6 +7,8 @@
 #define RESET 22
 #define SPISPEED 2500000  
 
+int slaveID = 2;
+
 // Pin Definitions for RS485
 #define RX_PIN 16
 #define TX_PIN 17
@@ -35,7 +37,7 @@ void setup() {
   digitalWrite(RESET, HIGH);
 
   mb3.begin(&Serial2, DE_RE_PIN); // Pass DE_RE pin to library
-  mb3.slave(2);  // Set Modbus slave ID to 1
+  mb3.slave(slaveID);  // Set Modbus slave ID to 1
 
   // Initialize Modbus holding registers untuk setiap channel
   for (int i = 0; i < 4; i++) {
@@ -77,7 +79,11 @@ void readsensorads() {
   analogValues[2] = (uint16_t)(readSingleEndedChannel(2) * 1000);  // Convert to mV
   analogValues[3] = (uint16_t)(readSingleEndedChannel(3) * 1000);  // Convert to mV
   // analogValues[4] = (uint16_t)(readSingleEndedChannel(3) * 1000);  // Convert to mV
-  Serial.println(analogValues[0]);
+  for (int i =0; i<4;i++){
+    Serial.print(analogValues[i]);
+    if (i<3) Serial.print(",");
+  }
+  Serial.println();
 }
 
 // Fungsi untuk mengonfigurasi ADS1256

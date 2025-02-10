@@ -7,6 +7,8 @@
 #define RESET 22
 #define SPISPEED 2500000  
 
+int slaveID = 1;
+
 // Pin Definitions for RS485
 #define RX_PIN 16
 #define TX_PIN 17
@@ -35,7 +37,7 @@ void setup() {
   digitalWrite(RESET, HIGH);
 
   mb3.begin(&Serial2, DE_RE_PIN); // Pass DE_RE pin to library
-  mb3.slave(1);  // Set Modbus slave ID to 1
+  mb3.slave(slaveID);  // Set Modbus slave ID to 1
 
   // Initialize Modbus holding registers untuk setiap channel
   for (int i = 0; i < 4; i++) {
@@ -76,8 +78,12 @@ void readsensorads() {
   analogValues[1] = (uint16_t)(readSingleEndedChannel(1) * 1000);  // Convert to mV
   analogValues[2] = (uint16_t)(readSingleEndedChannel(2) * 1000);  // Convert to mV
   analogValues[3] = (uint16_t)(readSingleEndedChannel(3) * 1000);  // Convert to mV
-  // analogValues[5] = (uint16_t)(readSingleEndedChannel(5) * 1000);  // Convert to mV
-  Serial.println(analogValues[0]);
+  // analogValues[4] = (uint16_t)(readSingleEndedChannel(3) * 1000);  // Convert to mV
+  for (int i =0; i<4;i++){
+    Serial.print(analogValues[i]);
+    if (i<3) Serial.print(",");
+  }
+  Serial.println();
 }
 
 // Fungsi untuk mengonfigurasi ADS1256
@@ -123,7 +129,7 @@ float readSingleEndedChannel(byte channel) {
   while (digitalRead(RDY));
 
   // Set MUX register untuk memilih saluran yang diinginkan (AINx-AINCOM)
-  byte muxValue = (channel << 6) | 0x08;
+  byte muxValue = (channel << 4) | 0x08; // Channel 0 = AIN0, Channel 1 = AIN1, Channel 2 = AIN2
   writeRegister(0x01, muxValue);
 
   // Kirim perintah SYNC dan WAKEUP
