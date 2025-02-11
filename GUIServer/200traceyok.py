@@ -132,23 +132,23 @@ class AccumulatedPlotViewer(QtWidgets.QMainWindow):
         self.start_timers()
 
     def init_ui(self):
-        self.setWindowTitle("Accumulated Line Plot Viewer - Modbus")
+        self.setWindowTitle("Realtime Seismic Plot")
         self.setGeometry(100, 100, 1000, 600)
 
         main_widget = QtWidgets.QWidget()
         self.setCentralWidget(main_widget)
-        main_layout = QtWidgets.QHBoxLayout(main_widget)  # Menggunakan QHBoxLayout sebagai layout utama
+        main_layout = QtWidgets.QHBoxLayout(main_widget)
 
         # Plot widget
         self.plot_widget = pg.PlotWidget()
         self.plot_widget.setBackground('w')
         self.plot_widget.showGrid(x=True, y=True, alpha=0.3)
         self.plot_widget.setLabel('left', 'Trace Number')
-        self.plot_widget.setLabel('bottom', 'Sample Value')
+        self.plot_widget.setLabel('bottom', 'Time (ms)')
 
         # Control panel
         control_panel = QtWidgets.QWidget()
-        control_layout = QtWidgets.QVBoxLayout(control_panel)  # Menggunakan QVBoxLayout untuk panel kontrol
+        control_layout = QtWidgets.QVBoxLayout(control_panel)
 
         # Dropdown untuk memilih slave dan register
         self.slave_dropdown = QtWidgets.QComboBox()
@@ -159,7 +159,7 @@ class AccumulatedPlotViewer(QtWidgets.QMainWindow):
         # ComboBox untuk memilih baudrate
         self.baudrate_dropdown = QtWidgets.QComboBox()
         self.baudrate_dropdown.addItems(["9600", "19200", "38400", "57600", "115200"])
-        self.baudrate_dropdown.setCurrentText("115200")  # Set default baudrate
+        self.baudrate_dropdown.setCurrentText("115200")
 
         # Label untuk menampilkan sample rate dan total data rate
         self.sample_rate_label = QtWidgets.QLabel("Sample Rate: N/A Hz")
@@ -184,11 +184,11 @@ class AccumulatedPlotViewer(QtWidgets.QMainWindow):
         control_layout.addWidget(self.total_data_rate_label)
         control_layout.addWidget(self.start_button)
         control_layout.addWidget(self.stop_button)
-        control_layout.addStretch()  # Menambahkan stretch untuk mengisi ruang kosong
+        control_layout.addStretch()
 
         # Tambahkan plot_widget dan control_panel ke main_layout
-        main_layout.addWidget(self.plot_widget, stretch=4)  # Grafik mengambil 4 bagian dari ruang
-        main_layout.addWidget(control_panel, stretch=1)  # Panel kontrol mengambil 1 bagian dari ruang
+        main_layout.addWidget(self.plot_widget, stretch=4)
+        main_layout.addWidget(control_panel, stretch=1)
 
     def init_data(self):
         self.current_trace = None
@@ -196,7 +196,7 @@ class AccumulatedPlotViewer(QtWidgets.QMainWindow):
     def start_timers(self):
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.update_plot)
-        self.timer.start(50)  # Update plot every 200 ms
+        self.timer.start(50)
 
     def downsample_data(self, x, y, max_points=500):
         """Downsample data to reduce the number of points while preserving the shape."""
@@ -234,7 +234,7 @@ class AccumulatedPlotViewer(QtWidgets.QMainWindow):
 
         # Calculate sample rate (samples per second) for the selected register
         current_time = time.time()
-        recent_samples = [t for t in timestamps if current_time - t <= 1]  # Samples in the last second
+        recent_samples = [t for t in timestamps if current_time - t <= 1]
         sample_rate = len(recent_samples)
         self.sample_rate_label.setText(f"Sample Rate: {sample_rate} Hz")
 
@@ -244,21 +244,18 @@ class AccumulatedPlotViewer(QtWidgets.QMainWindow):
                 self.plot_widget.removeItem(trace)
         self.traces = []
 
-        # Plot 50 traces vertically
+        # Plot traces vertically
         num_traces = 50
-        trace_spacing = 0.1  # Spacing between traces
+        trace_spacing = 0.1
         for i in range(num_traces):
-            # Shift each trace vertically
             shifted_values = values + i * trace_spacing
-
-            # Plot the trace with new data appearing from the right and moving to the left
             trace = self.plot_widget.plot(iterations, shifted_values, pen=pg.mkPen('b', width=1))
             self.traces.append(trace)
 
         # Update x-axis range to show the latest data
         if len(iterations) > 0:
-            x_min = iterations[-1] - MAX_ITERATIONS  # Oldest data point to show
-            x_max = iterations[-1]  # Latest data point
+            x_min = iterations[-1] - MAX_ITERATIONS
+            x_max = iterations[-1]
             self.plot_widget.setXRange(x_min, x_max, padding=0.02)
 
         # Remove data that is outside the visible range
@@ -266,7 +263,6 @@ class AccumulatedPlotViewer(QtWidgets.QMainWindow):
             selected_slave = self.slave_ids[self.slave_dropdown.currentIndex()]
             selected_reg = self.register_dropdown.currentText()
             if selected_slave in data_buffer and selected_reg in data_buffer[selected_slave]:
-                # Remove data points that are outside the visible range
                 data_buffer[selected_slave][selected_reg] = [
                     (iter, val, ts) for iter, val, ts in data_buffer[selected_slave][selected_reg]
                     if iter >= x_min
@@ -296,7 +292,7 @@ def main():
         port="COM6",
         slave_ids=slave_ids,
         baudrate=115200,
-        timeout=0.05,  # Reduced timeout for faster responses
+        timeout=0.05,
     )
 
     shutdown_event = threading.Event()
@@ -305,7 +301,7 @@ def main():
 
     app = QtWidgets.QApplication(sys.argv)
     viewer = AccumulatedPlotViewer(slave_ids)
-    viewer.master = master  # Simpan instance ModbusRTUMaster di viewer
+    viewer.master = master
     viewer.show()
 
     exit_code = app.exec_()
