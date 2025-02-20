@@ -7,7 +7,7 @@
 #define RESET 22
 #define SPISPEED 2500000  
 
-int slaveID = 2;
+int slaveID = 4;
 
 // Pin Definitions for RS485
 #define RX_PIN 16
@@ -75,15 +75,8 @@ void loop() {
 // Fungsi untuk membaca sensor ADS1256
 void readsensorads() {
   analogValues[0] = (uint16_t)(readSingleEndedChannel(0) * 1000);  // Convert to mV
-  analogValues[1] = (uint16_t)(readSingleEndedChannel(1) * 1000);  // Convert to mV
-  analogValues[2] = (uint16_t)(readSingleEndedChannel(2) * 1000);  // Convert to mV
-  analogValues[3] = (uint16_t)(readSingleEndedChannel(3) * 1000);  // Convert to mV
-  // analogValues[4] = (uint16_t)(readSingleEndedChannel(3) * 1000);  // Convert to mV
-  for (int i =0; i<4;i++){
-    Serial.print(analogValues[i]);
-    if (i<3) Serial.print(",");
-  }
-  Serial.println();
+  
+  Serial.println(analogValues[0]);
 }
 
 // Fungsi untuk mengonfigurasi ADS1256

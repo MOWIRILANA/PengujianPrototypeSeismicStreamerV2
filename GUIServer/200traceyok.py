@@ -1,316 +1,190 @@
-import asyncio
-from pymodbus.client import AsyncModbusSerialClient
-from pymodbus.exceptions import ModbusException, ConnectionException
-from pymodbus.pdu import ExceptionResponse
-import logging
-import sys
-from datetime import datetime
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtWidgets, QtCore
+import tkinter as tk
+from tkinter import ttk
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
 import time
-import numpy as np
+from pymodbus.client import ModbusSerialClient
 
-# Enable anti-aliasing for smoother plots
-pg.setConfigOptions(antialias=True)
+class RealtimeSeismicGUI:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Realtime Seismic Data Viewer")
 
-# Logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s",
-    handlers=[
-        logging.StreamHandler(sys.stdout),
-        logging.FileHandler("modbus_accumulated_plot.log"),
-    ],
-)
+        # Set window to maximize
+        self.root.state('zoomed')  # For Windows
+        # self.root.attributes('-zoomed', True)  # For Linux
 
-# Global variables
-lock = threading.Lock()
-data_buffer = {}
-MAX_ITERATIONS = 500  # Maximum number of data points to accumulate
-data_running = False  # Global variable to control data transmission
-selected_slave = None
-selected_reg = None
+        # Create a main frame to hold the plot and controls
+        self.main_frame = tk.Frame(root)
+        self.main_frame.pack(fill=tk.BOTH, expand=True)
 
-class ModbusRTUMaster:
-    def __init__(self, port, slave_ids, baudrate=9600, timeout=3, max_retries=5, retry_delay=1):
-        self.port = port
-        self.slave_ids = slave_ids
-        self.baudrate = baudrate
-        self.timeout = timeout
-        self.client = None
-        self.connected = False
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
+        # Create a matplotlib figure
+        self.fig, self.ax = plt.subplots()
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.main_frame)
+        self.canvas.get_tk_widget().pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-    async def connect(self):
-        retries = 0
-        while retries < self.max_retries:
+        # Create a control frame for buttons and combobox
+        self.control_frame = tk.Frame(self.main_frame)
+        self.control_frame.pack(side=tk.RIGHT, fill=tk.Y, padx=10, pady=10)
+
+        # Start/Stop buttons
+        self.start_button = ttk.Button(self.control_frame, text="Start", command=self.start_realtime)
+        self.start_button.pack(side=tk.TOP, pady=5)
+        self.stop_button = ttk.Button(self.control_frame, text="Stop", command=self.stop_realtime)
+        self.stop_button.pack(side=tk.TOP, pady=5)
+
+        # Reset Data Plot button
+        self.reset_button = ttk.Button(self.control_frame, text="Reset Data Plot", command=self.reset_data)
+        self.reset_button.pack(side=tk.TOP, pady=5)
+
+        # Combobox for selecting slave
+        self.slave_label = ttk.Label(self.control_frame, text="Select Slave:")
+        self.slave_label.pack(side=tk.TOP, pady=5)
+        self.slave_combobox = ttk.Combobox(self.control_frame, values=[1, 2, 3, 4], state="readonly")
+        self.slave_combobox.current(1)  # Set default to slave 2
+        self.slave_combobox.pack(side=tk.TOP, pady=5)
+        self.slave_combobox.bind("<<ComboboxSelected>>", self.on_slave_change)  # Bind event
+
+        # Combobox for selecting range
+        self.range_label = ttk.Label(self.control_frame, text="Select Range:")
+        self.range_label.pack(side=tk.TOP, pady=5)
+        self.range_combobox = ttk.Combobox(self.control_frame, values=[75, 500, 2000, 10000, 65535], state="readonly")
+        self.range_combobox.current(0)  # Set default to 100
+        self.range_combobox.pack(side=tk.TOP, pady=5)
+        self.range_combobox.bind("<<ComboboxSelected>>", self.on_range_change)  # Bind event
+
+        # Variables for realtime data
+        self.is_running = False
+        self.num_traces = 200  # Number of traces
+        self.num_samples = 30  # Number of samples per trace
+        self.data = np.zeros((self.num_samples, self.num_traces))
+        self.trace_numbers = np.arange(self.num_traces)
+        self.line = np.arange(self.num_samples)
+        self.selected_range = 100  # Default range
+
+        # Modbus client setup
+        self.client = ModbusSerialClient(
+            port='COM6', 
+            baudrate=115200, 
+            timeout=1, 
+            parity='N', 
+            stopbits=1, 
+            bytesize=8)
+        
+        self.modbus_connected = self.client.connect()
+        if not self.modbus_connected:
+            print("Failed to connect to Modbus slave")
+        else:
+            print("Connected to Modbus slave")
+
+        # Buffer untuk menyimpan data Modbus
+        self.data_buffer = []
+        self.data_lock = threading.Lock()
+
+    def start_realtime(self):
+        """Start the realtime data acquisition and plotting."""
+        if not self.is_running:
+            self.is_running = True
+            # Thread untuk membaca data Modbus setiap 1 ms
+            self.modbus_thread = threading.Thread(target=self.read_modbus_data)
+            self.modbus_thread.daemon = True
+            self.modbus_thread.start()
+            # Thread untuk memperbarui plot setiap 1 detik
+            self.plot_thread = threading.Thread(target=self.update_plot)
+            self.plot_thread.daemon = True
+            self.plot_thread.start()
+
+    def stop_realtime(self):
+        """Stop the realtime data acquisition."""
+        self.is_running = False
+        self.client.close()
+
+    def reset_data(self):
+        """Reset data and stop realtime acquisition."""
+        self.stop_realtime()  # Stop the current process
+        with self.data_lock:
+            self.data_buffer = []  # Clear the buffer
+            self.data = np.zeros((self.num_samples, self.num_traces))  # Reset the data array
+        self.ax.clear()  # Clear the plot
+        self.canvas.draw()  # Redraw the canvas
+
+    def on_slave_change(self, event):
+        """Handle slave change event."""
+        # self.reset_data()  # Reset data and stop current process
+        self.start_realtime()  # Restart with the new slave
+
+    def on_range_change(self, event):
+        """Handle range change event."""
+        self.selected_range = int(self.range_combobox.get())
+        # self.reset_data()  # Reset data and stop current process
+        self.start_realtime()  # Restart with the new range
+
+    def read_modbus_data(self):
+        """Read Modbus data every 1 ms and store it in the buffer."""
+        while self.is_running:
             try:
-                if self.client and self.client.connected:
-                    await self.client.close()  # Ensure the port is closed before reconnecting
-                self.client = AsyncModbusSerialClient(
-                    port=self.port,
-                    baudrate=self.baudrate,
-                    bytesize=8,
-                    parity="N",
-                    stopbits=1,
-                    timeout=self.timeout,
-                )
-                self.connected = await self.client.connect()
-                if self.connected:
-                    logging.info(f"Connected to {self.port} at {self.baudrate} baud")
-                    return True
+                if not self.client.connect():
+                    print("Failed to connect to Modbus slave")
+                    time.sleep(1)
+                    continue
+
+                # Ambil nilai slave dari Combobox
+                selected_slave = int(self.slave_combobox.get())
+
+                # Baca 1 register mulai dari alamat 0
+                response = self.client.read_holding_registers(address=0, count=1, slave=selected_slave)
+                if response.isError():
+                    print("Modbus read error")
                 else:
-                    retries += 1
-                    await asyncio.sleep(self.retry_delay)
+                    with self.data_lock:
+                        datamodbus = (response.registers[0] - 5) / (self.selected_range - 5) * 5 # (data-min)/(max-min)*min
+                        print("Datamodbus:", datamodbus)
+                        self.data_buffer.append(datamodbus)  # Simpan data ke buffer
+                        # print("Data Register:", response.registers[0])
+                        
+                time.sleep(0.0001)  # 1 ms delay
             except Exception as e:
-                retries += 1
-                logging.warning(f"Connection error: {e}. Retry {retries}/{self.max_retries}")
-                await asyncio.sleep(self.retry_delay)
-        logging.error(f"Connection failed after {self.max_retries} retries.")
-        return False
-
-    async def disconnect(self):
-        if self.client and self.client.connected:
-            await self.client.close()
-            self.connected = False
-            logging.info("Disconnected")
-
-    async def read_voltages(self, slave_id):
-        try:
-            if not self.connected:
-                await self.connect()
-            response = await self.client.read_holding_registers(address=0, count=4, slave=slave_id)
-            if isinstance(response, ExceptionResponse):
-                raise ModbusException(f"Slave {slave_id} exception")
-            if hasattr(response, "registers"):
-                return [value / 1000.0 for value in response.registers]
-            else:
-                raise ModbusException("Invalid response")
-        except (ConnectionException, ModbusException) as e:
-            logging.error(f"Read error slave {slave_id}: {e}")
-            self.connected = False
-        except Exception as e:
-            logging.error(f"Unexpected error: {e}")
-        return None
-
-
-async def modbus_main(master, shutdown_event):
-    global data_buffer, data_running, selected_slave, selected_reg
-    try:
-        iteration = 0
-        while not shutdown_event.is_set():
-            if data_running and selected_slave is not None and selected_reg is not None:
-                voltages = await master.read_voltages(selected_slave)
-                if voltages:
-                    timestamp = datetime.now().timestamp()
-                    with lock:
-                        if selected_slave not in data_buffer:
-                            data_buffer[selected_slave] = {}
-                        if selected_reg not in data_buffer[selected_slave]:
-                            data_buffer[selected_slave][selected_reg] = []
-                        reg_index = ["A0", "A1", "A2", "A3"].index(selected_reg)
-                        data_buffer[selected_slave][selected_reg].append((iteration, voltages[reg_index], timestamp))
-                        # Limit data to MAX_ITERATIONS
-                        if len(data_buffer[selected_slave][selected_reg]) > MAX_ITERATIONS:
-                            data_buffer[selected_slave][selected_reg].pop(0)
-                    iteration += 1
-            await asyncio.sleep(0.0001)  # Faster polling
-    except Exception as e:
-        logging.error(f"Modbus loop error: {e}")
-    finally:
-        await master.disconnect()
-
-
-class AccumulatedPlotViewer(QtWidgets.QMainWindow):
-    def __init__(self, slave_ids):
-        super().__init__()
-        self.slave_ids = slave_ids
-        self.init_ui()
-        self.init_data()
-        self.start_timers()
-
-    def init_ui(self):
-        self.setWindowTitle("Realtime Seismic Plot")
-        self.setGeometry(100, 100, 1000, 600)
-
-        main_widget = QtWidgets.QWidget()
-        self.setCentralWidget(main_widget)
-        main_layout = QtWidgets.QHBoxLayout(main_widget)
-
-        # Plot widget
-        self.plot_widget = pg.PlotWidget()
-        self.plot_widget.setBackground('w')
-        self.plot_widget.showGrid(x=True, y=True, alpha=0.3)
-        self.plot_widget.setLabel('left', 'Trace Number')
-        self.plot_widget.setLabel('bottom', 'Time (ms)')
-
-        # Control panel
-        control_panel = QtWidgets.QWidget()
-        control_layout = QtWidgets.QVBoxLayout(control_panel)
-
-        # Dropdown untuk memilih slave dan register
-        self.slave_dropdown = QtWidgets.QComboBox()
-        self.slave_dropdown.addItems([f"Slave {sid}" for sid in self.slave_ids])
-        self.register_dropdown = QtWidgets.QComboBox()
-        self.register_dropdown.addItems(["A0", "A1", "A2", "A3"])
-
-        # ComboBox untuk memilih baudrate
-        self.baudrate_dropdown = QtWidgets.QComboBox()
-        self.baudrate_dropdown.addItems(["9600", "19200", "38400", "57600", "115200"])
-        self.baudrate_dropdown.setCurrentText("115200")
-
-        # Label untuk menampilkan sample rate dan total data rate
-        self.sample_rate_label = QtWidgets.QLabel("Sample Rate: N/A Hz")
-        self.total_data_rate_label = QtWidgets.QLabel("Total Data Rate: N/A Hz")
-        self.sample_rate_label.setStyleSheet("font-weight: bold; color: blue;")
-        self.total_data_rate_label.setStyleSheet("font-weight: bold; color: green;")
-
-        # Tombol Start dan Stop
-        self.start_button = QtWidgets.QPushButton("Start")
-        self.stop_button = QtWidgets.QPushButton("Stop")
-        self.start_button.clicked.connect(self.start_data)
-        self.stop_button.clicked.connect(self.stop_data)
-
-        # Tambahkan widget ke control_layout
-        control_layout.addWidget(QtWidgets.QLabel("Slave:"))
-        control_layout.addWidget(self.slave_dropdown)
-        control_layout.addWidget(QtWidgets.QLabel("Register:"))
-        control_layout.addWidget(self.register_dropdown)
-        control_layout.addWidget(QtWidgets.QLabel("Baudrate:"))
-        control_layout.addWidget(self.baudrate_dropdown)
-        control_layout.addWidget(self.sample_rate_label)
-        control_layout.addWidget(self.total_data_rate_label)
-        control_layout.addWidget(self.start_button)
-        control_layout.addWidget(self.stop_button)
-        control_layout.addStretch()
-
-        # Tambahkan plot_widget dan control_panel ke main_layout
-        main_layout.addWidget(self.plot_widget, stretch=4)
-        main_layout.addWidget(control_panel, stretch=1)
-
-    def init_data(self):
-        self.current_trace = None
-
-    def start_timers(self):
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_plot)
-        self.timer.start(50)
-
-    def downsample_data(self, x, y, max_points=500):
-        """Downsample data to reduce the number of points while preserving the shape."""
-        if len(x) > max_points:
-            indices = np.linspace(0, len(x) - 1, max_points).astype(int)
-            return x[indices], y[indices]
-        return x, y
-
-    def process_data(self):
-        global data_buffer
-        processed = []
-
-        with lock:
-            selected_slave = self.slave_ids[self.slave_dropdown.currentIndex()]
-            selected_reg = self.register_dropdown.currentText()
-
-            if selected_slave in data_buffer and selected_reg in data_buffer[selected_slave]:
-                processed = data_buffer[selected_slave][selected_reg]
-
-        return processed
+                print("Modbus communication error:", e)
 
     def update_plot(self):
-        data = self.process_data()
-        if not data:
-            return
+        """Update the plot with data collected in the last second."""
+        while self.is_running:
+            with self.data_lock:
+                if self.data_buffer:
+                    # Ambil data dari buffer
+                    new_trace = np.array(self.data_buffer)
+                    print("New trace:", new_trace)
+                    self.data_buffer = []  # Reset buffer setelah diambil
 
-        # Extract iteration numbers, voltage values, and timestamps
-        iterations, values, timestamps = zip(*data)
-        iterations = np.array(iterations)
-        values = np.array(values)
-        timestamps = np.array(timestamps)
+                    # Pastikan panjang data sesuai dengan num_samples
+                    if len(new_trace) < self.num_samples:
+                        # Jika data lebih pendek, isi dengan nilai 0
+                        new_trace = np.pad(new_trace, (0, self.num_samples - len(new_trace)), mode='constant')
+                    else:
+                        # Jika data lebih panjang, potong menjadi num_samples
+                        new_trace = new_trace[:self.num_samples]
 
-        # Downsample data for smoother visualization
-        iterations, values = self.downsample_data(iterations, values)
+                    # Roll the data to the left and add new trace to the end
+                    self.data = np.roll(self.data, -1, axis=1)
+                    self.data[:, -1] = new_trace  # Tambahkan data baru ke kolom terakhir
 
-        # Calculate sample rate (samples per second) for the selected register
-        current_time = time.time()
-        recent_samples = [t for t in timestamps if current_time - t <= 1]
-        sample_rate = len(recent_samples)
-        self.sample_rate_label.setText(f"Sample Rate: {sample_rate} Hz")
+            # Update plot
+            self.ax.clear()
+            for i in range(self.data.shape[1]):
+                self.ax.plot(self.trace_numbers[i] + self.data[:, i], self.line, color='black')  # Garis hitam
+                # self.ax.fill_betweenx(self.line, self.trace_numbers[i], self.trace_numbers[i] + self.data[:, i])
+                                    # where=self.data[:, i] > 0, color='black', alpha=0.5)  # Area diisi dengan hitam
 
-        # Clear previous traces
-        if hasattr(self, 'traces'):
-            for trace in self.traces:
-                self.plot_widget.removeItem(trace)
-        self.traces = []
+            self.ax.set_xlabel('Trace Number')
+            self.ax.set_ylabel('Time/Depth')
+            self.ax.set_xlim(-10, self.num_traces + 10)
+            self.canvas.draw()
 
-        # Plot traces vertically
-        num_traces = 50
-        trace_spacing = 0.1
-        for i in range(num_traces):
-            shifted_values = values + i * trace_spacing
-            trace = self.plot_widget.plot(iterations, shifted_values, pen=pg.mkPen('b', width=1))
-            self.traces.append(trace)
+            time.sleep(1)  # Delay untuk memperbarui plot setiap 1 detik
 
-        # Update x-axis range to show the latest data
-        if len(iterations) > 0:
-            x_min = iterations[-1] - MAX_ITERATIONS
-            x_max = iterations[-1]
-            self.plot_widget.setXRange(x_min, x_max, padding=0.02)
-
-        # Remove data that is outside the visible range
-        with lock:
-            selected_slave = self.slave_ids[self.slave_dropdown.currentIndex()]
-            selected_reg = self.register_dropdown.currentText()
-            if selected_slave in data_buffer and selected_reg in data_buffer[selected_slave]:
-                data_buffer[selected_slave][selected_reg] = [
-                    (iter, val, ts) for iter, val, ts in data_buffer[selected_slave][selected_reg]
-                    if iter >= x_min
-                ]
-
-    def start_data(self):
-        global data_running, selected_slave, selected_reg
-        selected_slave = self.slave_ids[self.slave_dropdown.currentIndex()]
-        selected_reg = self.register_dropdown.currentText()
-        baudrate = int(self.baudrate_dropdown.currentText())
-        self.master.baudrate = baudrate
-        data_running = True
-        logging.info(f"Data transmission started at {baudrate} baud for Slave {selected_slave} and Register {selected_reg}")
-
-    def stop_data(self):
-        global data_running
-        data_running = False
-        logging.info("Data transmission stopped")
-
-
-def main():
-    slave_ids = [1, 2, 3, 4]
-
-    global data_buffer
-    data_buffer = {sid: {reg: [] for reg in ["A0", "A1", "A2", "A3"]} for sid in slave_ids}
-    master = ModbusRTUMaster(
-        port="COM6",
-        slave_ids=slave_ids,
-        baudrate=115200,
-        timeout=0.05,
-    )
-
-    shutdown_event = threading.Event()
-    modbus_thread = threading.Thread(target=lambda: asyncio.run(modbus_main(master, shutdown_event)))
-    modbus_thread.start()
-
-    app = QtWidgets.QApplication(sys.argv)
-    viewer = AccumulatedPlotViewer(slave_ids)
-    viewer.master = master
-    viewer.show()
-
-    exit_code = app.exec_()
-
-    shutdown_event.set()
-    modbus_thread.join()
-    logging.info("Application shutdown complete")
-    sys.exit(exit_code)
-
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = RealtimeSeismicGUI(root)
+    root.mainloop()

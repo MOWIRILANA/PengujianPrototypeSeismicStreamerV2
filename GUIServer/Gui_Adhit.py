@@ -31,7 +31,7 @@ MAX_ITERATIONS = 500  # Maximum number of data points to accumulate
 data_running = False  # Global variable to control data transmission
 
 class ModbusRTUMaster:
-    def __init__(self, port, slave_ids, baudrate=9600, timeout=3, max_retries=5, retry_delay=1):
+    def __init__(self, port, slave_ids, baudrate=115200, timeout=3, max_retries=5, retry_delay=1):
         self.port = port
         self.slave_ids = slave_ids
         self.baudrate = baudrate

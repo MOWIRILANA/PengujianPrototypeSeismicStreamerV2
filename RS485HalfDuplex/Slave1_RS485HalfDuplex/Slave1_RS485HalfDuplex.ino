@@ -7,7 +7,7 @@
 #define RESET 22
 #define SPISPEED 2500000  
 
-int slaveID = 1;
+int slaveID = 3;
 
 // Pin Definitions for RS485
 #define RX_PIN 16

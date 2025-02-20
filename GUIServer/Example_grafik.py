@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import threading
 import time
-import random
 
 class RealtimeSeismicGUI:
     def __init__(self, root):
@@ -17,7 +16,7 @@ class RealtimeSeismicGUI:
         self.canvas = FigureCanvasTkAgg(self.fig, master=root)
         self.canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
-        # Start/Stop button
+        # Start/Stop buttons
         self.start_button = ttk.Button(root, text="Start", command=self.start_realtime)
         self.start_button.pack(side=tk.LEFT)
         self.stop_button = ttk.Button(root, text="Stop", command=self.stop_realtime)
@@ -25,9 +24,11 @@ class RealtimeSeismicGUI:
 
         # Variables for realtime data
         self.is_running = False
-        self.data = np.zeros((200, 100))  # Initialize with empty data
-        self.trace_numbers = np.arange(100)
-        self.line = np.arange(200)
+        self.num_traces = 50  # Ensure exactly 100 traces
+        self.num_samples = 100
+        self.data = np.zeros((self.num_samples, self.num_traces))
+        self.trace_numbers = np.arange(self.num_traces)
+        self.line = np.arange(self.num_samples)
 
     def start_realtime(self):
         """Start the realtime data simulation and plotting."""
@@ -45,7 +46,8 @@ class RealtimeSeismicGUI:
         """Simulate realtime data and update the plot."""
         while self.is_running:
             # Simulate new seismic data (replace this with real data acquisition)
-            new_trace = np.random.randn(200) * 10  # Random seismic trace
+            new_trace = np.random.randn(self.num_samples) * 10  # Random seismic trace
+            print(new_trace)
             self.data = np.roll(self.data, -1, axis=1)  # Shift data to the left
             self.data[:, -1] = new_trace  # Add new trace to the end
 
@@ -58,6 +60,7 @@ class RealtimeSeismicGUI:
 
             self.ax.set_xlabel('Trace Number')
             self.ax.set_ylabel('Time/Depth')
+            self.ax.set_xlim(-10, self.num_traces + 10)  # Ensure consistent x-axis range
             self.canvas.draw()
 
             # Simulate a delay (e.g., waiting for new data)
