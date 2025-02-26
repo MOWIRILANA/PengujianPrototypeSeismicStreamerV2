@@ -1838,3 +1838,115 @@
 2025-02-14 05:54:28,604 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
 2025-02-14 05:54:29,819 - INFO - Connected to COM6 at 115200 baud
 2025-02-14 05:54:31,633 - INFO - Application shutdown complete
+2025-02-21 14:35:02,677 - INFO - Data transmission started at 115200 baud
+2025-02-21 14:35:02,770 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 14:35:18,392 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 14:35:18,392 - ERROR - Read error slave 3: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 14:35:18,392 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 14:35:19,606 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 14:36:02,420 - INFO - Application shutdown complete
+2025-02-21 14:36:59,674 - INFO - Data transmission started at 115200 baud
+2025-02-21 14:36:59,771 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 14:37:49,550 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 14:37:49,552 - ERROR - Read error slave 4: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 14:37:49,733 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 14:37:51,008 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 14:37:52,488 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 14:37:52,488 - ERROR - Read error slave 3: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 14:37:52,498 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 14:37:53,796 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 14:38:20,426 - INFO - Application shutdown complete
+2025-02-21 14:39:19,912 - INFO - Data transmission started at 115200 baud
+2025-02-21 14:39:20,006 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 14:39:49,722 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 14:39:49,722 - ERROR - Read error slave 4: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 14:39:49,840 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 14:39:51,017 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 14:40:10,152 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 14:40:10,155 - ERROR - Read error slave 1: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 14:40:10,158 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 14:40:11,605 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 14:40:12,063 - INFO - Application shutdown complete
+2025-02-21 15:14:16,032 - INFO - Data transmission started at 115200 baud
+2025-02-21 15:14:16,130 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 15:14:26,890 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 15:14:26,895 - ERROR - Read error slave 4: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 15:14:26,900 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 15:14:28,023 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 15:14:29,285 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 15:14:29,288 - ERROR - Read error slave 3: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 15:14:29,289 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 15:14:30,452 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 15:14:33,876 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 15:14:33,877 - ERROR - Read error slave 3: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 15:14:33,878 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 15:14:34,974 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 15:14:35,034 - INFO - Application shutdown complete
+2025-02-21 15:14:53,735 - INFO - Data transmission started at 115200 baud
+2025-02-21 15:14:53,817 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 15:14:58,707 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 15:14:58,770 - ERROR - Read error slave 2: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 15:14:58,774 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 15:14:59,921 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 15:15:04,430 - ERROR - No response received after 3 retries, continue with next request
+2025-02-21 15:15:04,430 - ERROR - Read error slave 3: Modbus Error: [Input/Output] No response received after 3 retries, continue with next request
+2025-02-21 15:15:04,433 - WARNING - Connection error: object NoneType can't be used in 'await' expression. Retry 1/5
+2025-02-21 15:15:05,552 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 15:15:20,863 - INFO - Application shutdown complete
+2025-02-21 15:18:17,800 - INFO - Data transmission started at 115200 baud
+2025-02-21 15:18:17,895 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 15:18:44,749 - INFO - Application shutdown complete
+2025-02-21 18:00:12,325 - INFO - Data transmission started at 115200 baud
+2025-02-21 18:00:12,327 - WARNING - Failed to connect could not open port 'COM6': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-21 18:00:13,433 - WARNING - Failed to connect could not open port 'COM6': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-21 18:00:14,541 - WARNING - Failed to connect could not open port 'COM6': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-21 18:00:15,671 - WARNING - Failed to connect could not open port 'COM6': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-21 18:00:16,784 - WARNING - Failed to connect could not open port 'COM6': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-21 18:00:17,899 - ERROR - Connection failed after 5 retries.
+2025-02-21 18:00:17,900 - ERROR - Read error slave 1: Modbus Error: [Connection] Not connected[AsyncModbusSerialClient COM6:0]
+2025-02-21 18:00:17,900 - WARNING - Failed to connect could not open port 'COM6': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-21 18:00:19,017 - WARNING - Failed to connect could not open port 'COM6': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-21 18:00:20,233 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 18:00:20,328 - INFO - Application shutdown complete
+2025-02-21 18:00:33,396 - INFO - Data transmission started at 115200 baud
+2025-02-21 18:00:33,490 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 18:00:37,664 - INFO - Data transmission started at 115200 baud
+2025-02-21 18:00:40,381 - INFO - Data transmission stopped
+2025-02-21 18:00:43,829 - INFO - Application shutdown complete
+2025-02-21 18:00:50,890 - INFO - Data transmission started at 115200 baud
+2025-02-21 18:00:50,974 - INFO - Connected to COM6 at 115200 baud
+2025-02-21 18:00:51,972 - INFO - Data transmission started at 115200 baud
+2025-02-21 18:00:53,061 - INFO - Data transmission stopped
+2025-02-21 18:16:12,914 - INFO - Application shutdown complete
+2025-02-22 14:46:53,893 - INFO - Application shutdown complete
+2025-02-22 14:52:33,841 - INFO - Data transmission started at 115200 baud
+2025-02-22 14:52:33,844 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:34,948 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:36,065 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:37,189 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:37,268 - INFO - Data transmission started at 115200 baud
+2025-02-22 14:52:38,299 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:39,421 - ERROR - Connection failed after 5 retries.
+2025-02-22 14:52:39,421 - ERROR - Read error slave 1: Modbus Error: [Connection] Not connected[AsyncModbusSerialClient COM3:0]
+2025-02-22 14:52:39,421 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:40,540 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:41,660 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:42,777 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:43,927 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:45,044 - ERROR - Connection failed after 5 retries.
+2025-02-22 14:52:45,044 - ERROR - Read error slave 2: Modbus Error: [Connection] Not connected[AsyncModbusSerialClient COM3:0]
+2025-02-22 14:52:45,044 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:46,153 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:47,292 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:48,407 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:49,529 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:50,637 - ERROR - Connection failed after 5 retries.
+2025-02-22 14:52:50,637 - ERROR - Read error slave 3: Modbus Error: [Connection] Not connected[AsyncModbusSerialClient COM3:0]
+2025-02-22 14:52:50,641 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:51,748 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:52,870 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:53,990 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:55,113 - WARNING - Failed to connect could not open port 'COM3': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-02-22 14:52:56,228 - ERROR - Connection failed after 5 retries.
+2025-02-22 14:52:56,230 - ERROR - Read error slave 4: Modbus Error: [Connection] Not connected[AsyncModbusSerialClient COM3:0]
+2025-02-22 14:52:56,237 - INFO - Application shutdown complete

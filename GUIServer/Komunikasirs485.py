@@ -11,7 +11,7 @@ BYTE_SIZE = 8
 TIMEOUT = 1
 
 # Alamat slave Modbus
-SLAVE_ID = 2
+SLAVE_ID = 1
 
 # Alamat register yang akan dibaca
 START_REGISTER = 0
@@ -48,7 +48,7 @@ def read_modbus_data():
                         latest_data = response.registers[0]  # Ambil nilai pertama dari list
                         data_buffer.append(latest_data)  # Tambahkan data terbaru ke buffer
                 print(f"Data Modbus: {latest_data}")
-                time.sleep(0.001)  # 1 ms delay
+                time.sleep(0.01) 
 
         except Exception as e:
             print(f"Exception occurred: {e}")
@@ -74,7 +74,9 @@ def collect_data_every_second():
 
 def process_data(data):
     # Fungsi untuk mengolah data yang terkumpul setiap 1 detik
-    print(f"Data collected in the last second: {data}")
+    data_count = len(data)  # Hitung jumlah data yang diterima dalam 1 detik
+    # print(f"Data collected in the last second: {data}")
+    print(f"Number of data received in the last second: {data_count}")
     # Lakukan pengolahan data di sini, misalnya:
     # - Hitung rata-rata
     # - Simpan ke file

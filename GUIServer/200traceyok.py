@@ -42,7 +42,7 @@ class RealtimeSeismicGUI:
         # Combobox for selecting slave
         self.slave_label = ttk.Label(self.control_frame, text="Select Slave:")
         self.slave_label.pack(side=tk.TOP, pady=5)
-        self.slave_combobox = ttk.Combobox(self.control_frame, values=[1, 2, 3, 4], state="readonly")
+        self.slave_combobox = ttk.Combobox(self.control_frame, values=[1,2,3,4], state="readonly")
         self.slave_combobox.current(1)  # Set default to slave 2
         self.slave_combobox.pack(side=tk.TOP, pady=5)
         self.slave_combobox.bind("<<ComboboxSelected>>", self.on_slave_change)  # Bind event
@@ -50,7 +50,7 @@ class RealtimeSeismicGUI:
         # Combobox for selecting range
         self.range_label = ttk.Label(self.control_frame, text="Select Range:")
         self.range_label.pack(side=tk.TOP, pady=5)
-        self.range_combobox = ttk.Combobox(self.control_frame, values=[75, 500, 2000, 10000, 65535], state="readonly")
+        self.range_combobox = ttk.Combobox(self.control_frame, values=[50, 500, 2000, 10000, 65535], state="readonly")
         self.range_combobox.current(0)  # Set default to 100
         self.range_combobox.pack(side=tk.TOP, pady=5)
         self.range_combobox.bind("<<ComboboxSelected>>", self.on_range_change)  # Bind event
@@ -69,7 +69,7 @@ class RealtimeSeismicGUI:
             port='COM6', 
             baudrate=115200, 
             timeout=1, 
-            parity='N', 
+            parity='N',
             stopbits=1, 
             bytesize=8)
         
@@ -82,6 +82,9 @@ class RealtimeSeismicGUI:
         # Buffer untuk menyimpan data Modbus
         self.data_buffer = []
         self.data_lock = threading.Lock()
+
+        # Counter untuk menghitung jumlah data yang diterima setiap detik
+        self.data_counter = 0
 
     def start_realtime(self):
         """Start the realtime data acquisition and plotting."""
@@ -139,10 +142,13 @@ class RealtimeSeismicGUI:
                     print("Modbus read error")
                 else:
                     with self.data_lock:
+                        # Konversi data Modbus ke data seismic
+                        # datamodbus = response.registers[0]
                         datamodbus = (response.registers[0] - 5) / (self.selected_range - 5) * 5 # (data-min)/(max-min)*min
-                        print("Datamodbus:", datamodbus)
+                        # print("Datamodbus:", datamodbus)
                         self.data_buffer.append(datamodbus)  # Simpan data ke buffer
-                        # print("Data Register:", response.registers[0])
+                        self.data_counter += 1  # Increment counter
+                        print("Data Register:", response.registers[0])
                         
                 time.sleep(0.0001)  # 1 ms delay
             except Exception as e:
@@ -155,7 +161,7 @@ class RealtimeSeismicGUI:
                 if self.data_buffer:
                     # Ambil data dari buffer
                     new_trace = np.array(self.data_buffer)
-                    print("New trace:", new_trace)
+                    # print("New trace:", new_trace)
                     self.data_buffer = []  # Reset buffer setelah diambil
 
                     # Pastikan panjang data sesuai dengan num_samples
@@ -181,6 +187,10 @@ class RealtimeSeismicGUI:
             self.ax.set_ylabel('Time/Depth')
             self.ax.set_xlim(-10, self.num_traces + 10)
             self.canvas.draw()
+
+            # Tampilkan jumlah data yang diterima setiap detik
+            print(f"Data received in the last second: {self.data_counter}")
+            self.data_counter = 0  # Reset counter
 
             time.sleep(1)  # Delay untuk memperbarui plot setiap 1 detik
 

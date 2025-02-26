@@ -323,7 +323,7 @@ def main():
     global data_buffer
     data_buffer = {sid: {reg: [] for reg in ["A0", "A1", "A2", "A3"]} for sid in slave_ids}
     master = ModbusRTUMaster(
-        port="COM6",
+        port="COM3",
         slave_ids=slave_ids,
         baudrate=115200,
         timeout=0.05,  # Reduced timeout for faster responses
