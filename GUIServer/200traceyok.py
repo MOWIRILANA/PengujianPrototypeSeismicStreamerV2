@@ -14,7 +14,6 @@ class RealtimeSeismicGUI:
 
         # Set window to maximize
         self.root.state('zoomed')  # For Windows
-        # self.root.attributes('-zoomed', True)  # For Linux
 
         # Create a main frame to hold the plot and controls
         self.main_frame = tk.Frame(root)
@@ -43,7 +42,7 @@ class RealtimeSeismicGUI:
         self.slave_label = ttk.Label(self.control_frame, text="Select Slave:")
         self.slave_label.pack(side=tk.TOP, pady=5)
         self.slave_combobox = ttk.Combobox(self.control_frame, values=[1,2,3,4], state="readonly")
-        self.slave_combobox.current(1)  # Set default to slave 2
+        self.slave_combobox.current(1)
         self.slave_combobox.pack(side=tk.TOP, pady=5)
         self.slave_combobox.bind("<<ComboboxSelected>>", self.on_slave_change)  # Bind event
 
@@ -184,7 +183,7 @@ class RealtimeSeismicGUI:
                                     # where=self.data[:, i] > 0, color='black', alpha=0.5)  # Area diisi dengan hitam
 
             self.ax.set_xlabel('Trace Number')
-            self.ax.set_ylabel('Time/Depth')
+            self.ax.set_ylabel('Time/second')
             self.ax.set_xlim(-10, self.num_traces + 10)
             self.canvas.draw()
 

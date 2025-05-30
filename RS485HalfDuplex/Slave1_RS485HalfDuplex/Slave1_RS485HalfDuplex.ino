@@ -74,11 +74,12 @@ void loop() {
 
 // Fungsi untuk membaca sensor ADS1256
 void readsensorads() {
-  analogValues[0] = (uint16_t)(readSingleEndedChannel(0) * 1000);  // Convert to mV
-  analogValues[1] = (uint16_t)(readSingleEndedChannel(1) * 1000);  // Convert to mV
-  analogValues[2] = (uint16_t)(readSingleEndedChannel(2) * 1000);  // Convert to mV
-  analogValues[3] = (uint16_t)(readSingleEndedChannel(3) * 1000);  // Convert to mV
-  // analogValues[4] = (uint16_t)(readSingleEndedChannel(3) * 1000);  // Convert to mV
+  analogValues[0] = (uint16_t)(readSingleEndedChannel(0) * 1000);  
+  // Serial.println(analogValues[0]);
+  analogValues[1] = (uint16_t)(readSingleEndedChannel(1) * 1000);  
+  analogValues[2] = (uint16_t)(readSingleEndedChannel(2) * 1000);  
+  analogValues[3] = (uint16_t)(readSingleEndedChannel(3) * 1000);  
+  // analogValues[4] = (uint16_t)(readSingleEndedChannel(3) * 1000);
   for (int i =0; i<4;i++){
     Serial.print(analogValues[i]);
     if (i<3) Serial.print(",");
@@ -86,13 +87,12 @@ void readsensorads() {
   Serial.println();
 }
 
-// Fungsi untuk mengonfigurasi ADS1256
 void configureADS1256() {
   SPI.beginTransaction(SPISettings(SPISPEED, MSBFIRST, SPI_MODE1));
   digitalWrite(CS, LOW);
 
   delay(2);
-  SPI.transfer(0xFE); // Reset command
+  SPI.transfer(0xFE);
   delay(5);
 
   // Set STATUS register (most significant bit first, buffer disabled)

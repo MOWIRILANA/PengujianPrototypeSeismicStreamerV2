@@ -4,10 +4,10 @@
 // Pin Definitions for ADS1256
 #define CS 5    
 #define RDY 21  
-#define RESET 22 
+#define RESET 22
 #define SPISPEED 2500000  
 
-int slaveID = 1;
+int slaveID = 2;
 
 // Pin Definitions for RS485
 #define RX_PIN 16
@@ -17,9 +17,8 @@ int slaveID = 1;
 ModbusRTU mb3;
 uint16_t analogValues[4] = {0, 0, 0, 0};  // Array untuk menyimpan nilai A0, A1, A2, A3
 
-unsigned long previousMillis = 0;
-unsigned int dataCount = 0;
-unsigned int dataPerSecond = 0;
+unsigned long lastReadMillis = 0;  // Waktu pembacaan terakhir
+unsigned long sampleCount = 0;     // Hitungan sampel per detik
 
 // Function Prototypes
 void configureADS1256();
@@ -75,35 +74,25 @@ void loop() {
 
 // Fungsi untuk membaca sensor ADS1256
 void readsensorads() {
-  // analogValues[0] = (uint16_t)(readSingleEndedChannel(0) * 1000);  // Convert to mV
-  analogValues[0] = generateRandomData();
-  analogValues[1] = generateRandomData();
-  analogValues[2] = generateRandomData();
-  analogValues[3] = generateRandomData();
-  // analogValues[1] = (uint16_t)(readSingleEndedChannel(0) * 1000);  // Convert to mV
-  
-  Serial.println(analogValues[0]);
-  dataCount++;
-
-  // Cek apakah sudah 1 detik berlalu
-  if (millis() - previousMillis >= 1000) {
-    previousMillis = millis();  // Reset waktu
-    dataPerSecond = dataCount;  // Simpan jumlah data yang diterima per detik
-    dataCount = 0;  // Reset penghitung
-
-    // Tampilkan jumlah data per detik
-    Serial.print("Data per second: ");
-    Serial.println(dataPerSecond);
+  analogValues[0] = (uint16_t)(readSingleEndedChannel(0) * 1000);  
+  // Serial.println(analogValues[0]);
+  analogValues[1] = (uint16_t)(readSingleEndedChannel(1) * 1000);  
+  analogValues[2] = (uint16_t)(readSingleEndedChannel(2) * 1000);  
+  analogValues[3] = (uint16_t)(readSingleEndedChannel(3) * 1000);  
+  // analogValues[4] = (uint16_t)(readSingleEndedChannel(3) * 1000);
+  for (int i =0; i<4;i++){
+    Serial.print(analogValues[i]);
+    if (i<3) Serial.print(",");
   }
+  Serial.println();
 }
 
-// Fungsi untuk mengonfigurasi ADS1256
 void configureADS1256() {
   SPI.beginTransaction(SPISettings(SPISPEED, MSBFIRST, SPI_MODE1));
   digitalWrite(CS, LOW);
 
   delay(2);
-  SPI.transfer(0xFE); // Reset command
+  SPI.transfer(0xFE);
   delay(5);
 
   // Set STATUS register (most significant bit first, buffer disabled)
@@ -177,9 +166,4 @@ void resetADS1256() {
   delay(10);                  // Wait for a short time
   digitalWrite(RESET, HIGH);  // Set RESET pin HIGH to complete the reset
   delay(10);                  // Wait to stabilize after reset
-}
-
-// Fungsi untuk menghasilkan data random
-uint16_t generateRandomData() {
-  return random(0, 5);
 }
